@@ -1,4 +1,28 @@
-<h1>{{title}}</h1>
-<p>Welcome to {{title}}</p>
-
-<a href="/users" class="button success">BUTTON</a>
+<div class="row">
+    <div class="small-12 medium-6 columns">
+        <div class="text-center">
+            <img src="frostgrave-banner.png" alt="Frostgrave" />
+            <h1>Frostgrave Roster Management</h1>
+        </div>
+    </div>
+    <div class="small-12 medium-6 columns">
+        <form action="/user/login" method="post">
+            <label>
+                 Email:
+                <input name="email" type="text" />
+            </label>
+            <label>
+                 Password:
+                <input name="password" type="password" />
+            </label>
+            <label class="text-right">
+                <button class="button primary">
+                    Login
+                </button>
+            </label>
+        </form>
+        <a href="/user/request-invite">
+            Request Login ...
+        </a>
+    </div>
+</div>
