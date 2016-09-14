@@ -1,0 +1,8 @@
+@import 'settings';
+@import 'foundation';
+
+@include foundation-everything(true);
+
+body {
+    background: green;
+}
