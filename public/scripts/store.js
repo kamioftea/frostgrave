@@ -12,8 +12,24 @@ const modeReducer = (state = actions.MODE_ROSTER_LIST, action) => {
     }
 }
 
+const filtersReducer = (state = {}, action) => {
+    switch(action.type) {
+        case: actions.TOGGLE_FILTER:
+            const values = state[key] || [];
+            const newValues = values.includes(value))
+                ? values.filter(v => v != value)
+                : values.concat([value])
+                
+            return {...state, [key]: newValues}
+            
+        default:
+            return state
+    }
+}
+
 const reducer = (state, action) => ({
-    mode: modeReducer(state.mode, action)
+    mode: modeReducer(state.mode, action),
+    filters: filtersReducer(state.filters, action) 
 })
 
 
