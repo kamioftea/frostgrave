@@ -3,6 +3,23 @@
 
 @include foundation-everything(true);
 
-body {
-    background: green;
+body, html {
+  min-height: 100%;
 }
+
+.splash-page {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  background: url('/images/frostgrave-background.jpg') no-repeat center 15%;
+  background-size: cover;
+
+  & > .row {
+    padding: 2 * $global-padding;
+    background-color: rgba($white, 0.75);
+  }
+}
+
+

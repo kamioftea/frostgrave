@@ -7,24 +7,29 @@
 			</div>
 		</div>
 		<div class="small-12 medium-6 columns">
-			<form action="/user/login" method="post">
-				<label>
-					Email:
-					<input name="email" type="text"/>
-				</label>
+			<form action="/user/access-key/{{access_key}}" method="post">
+				{{#if message }}
+					<div class="callout alert">
+						<p>{{ message }}</p>
+					</div>
+				{{/if}}
+
+				<h1>Set Password</h1>
+				<p>Set a new password for {{ user.name }} &lt;{{ user.email }}&gt;</p>
 				<label>
 					Password:
 					<input name="password" type="password"/>
 				</label>
+				<label>
+					Retype Password:
+					<input name="password_check" type="password"/>
+				</label>
 				<label class="text-right">
 					<button class="button primary">
-						Login
+						Set Password
 					</button>
 				</label>
 			</form>
-			<a href="/user/request-invite">
-				Request Login ...
-			</a>
 		</div>
 	</div>
 </div>

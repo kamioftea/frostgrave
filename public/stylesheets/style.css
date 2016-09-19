@@ -3312,7 +3312,18 @@ table.hover tr:nth-of-type(even):hover {
   .large-order-6 {
     order: 6; } }
 
-body {
-  background: green; }
+body, html {
+  min-height: 100%; }
+
+.splash-page {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: url("/images/frostgrave-background.jpg") no-repeat center 15%;
+  background-size: cover; }
+  .splash-page > .row {
+    padding: 2rem;
+    background-color: rgba(254, 254, 254, 0.75); }
 
 /*# sourceMappingURL=style.css.map */
