@@ -1,10 +1,8 @@
-const { MongoClient }  = require('mongodb');
+const { MongoClient, ObjectID }  = require('mongodb');
 
-const collection = name =>
-	MongoClient
-		.connect('mongodb://localhost:27017/frostgrave')
-		.then(db => db.collection(name));
+const db = () =>
+	MongoClient.connect('mongodb://localhost:27017/frostgrave')
 
 module.exports = {
-	collection
+	db
 };
