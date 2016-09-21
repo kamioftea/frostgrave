@@ -1,8 +1,11 @@
-const passport = require('passport');
+const Rx = require('rxjs');
 const {Strategy: LocalStrategy} = require('passport-local');
-const {db} = require('./db-conn.js');
-const { ObjectID }  = require('mongodb');
+const {db$} = require('./db-conn.js');
+const {ObjectID}  = require('mongodb');
 const bcrypt = require('bcryptjs');
+const bcryptCompare = Rx.Observable.bindNodeCallback(bcrypt.compare);
+
+const passport = require('passport');
 
 // Configure the local strategy for use by Passport.
 //
@@ -16,36 +19,14 @@ passport.use(new LocalStrategy(
         passwordField: 'password'
     },
     (username, password, cb) => {
-        db().then(
-            db => db.collection('users')
-                .findOne({email: username})
-                .then(
-                    user => {
-                        console.log(user);
-                        if (!user) {
-                            db.close();
-                            return cb(null, false)
-                        }
-                        bcrypt.compare(password, user.password, (err, res) => {
-                            db.close();
-                            if (err) {
-                                return cb(err);
-                            }
-                            console.log("bcrypt:");
-                            console.log(res);
-                            return cb(null, res ? user : false)
-                        })
-                    },
-                    err => {
-                        db.close();
-                        return cb(err)
-                    }
-                ),
-            err => {
-                return cb(err)
-            }
-        )
-    }));
+        db$.mergeMap(db => db.collection('users').findOne({email: username}))
+            .mergeMap(user => bcryptCompare(password, user.password).map(result => result ? user : false))
+            .subscribe(
+                user => cb(null, user),
+                err => cb(err)
+            );
+    }
+));
 
 // Configure Passport authenticated session persistence.
 //
@@ -55,33 +36,16 @@ passport.use(new LocalStrategy(
 // serializing, and querying the user record by ID from the database when
 // deserializing.
 passport.serializeUser((user, cb) => {
-    console.log('serializeUser');
-    console.log(user);
     return cb(null, user._id)
 });
 
-passport.deserializeUser((id, cb) => {
-        console.log('unserializeUser');
-        console.log(id);
-        return db().then(
-            db => db.collection('users')
-                .findOne({_id: ObjectID(id)})
-                .then(
-                    user => {
-                        console.log(user);
-                        db.close();
-                        cb(null, user)
-                    },
-                    err => {
-                        db.close();
-                        cb(err)
-                    }
-                ),
-            err => {
-                cb(err)
-            }
+passport.deserializeUser(
+    (id, cb) => db$
+        .mergeMap(db => db.collection('users').findOne({_id: ObjectID(id)}))
+        .subscribe(
+            user => cb(null, user),
+            err => cb(err)
         )
-    }
 );
 
 module.exports = passport;
