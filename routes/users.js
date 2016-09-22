@@ -127,9 +127,10 @@ module.exports = (passport) => {
     );
 
     router.post('/login',
-        passport.authenticate('local'),
+        (req, res, next) => passport.authenticate('local', {}, (err, user) => user ? req.logIn(user, next) : next(err))(req, res, next),
         (req, res) => res.redirect(req.body.redirect_url || '/')
     );
+
     router.post('/logout', (req, res) => {
         req.logout();
         res.redirect('/');

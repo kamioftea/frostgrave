@@ -8,6 +8,9 @@
 <body>
     <div class="admin-container row expanded">
         <section class="main medium-order-2 small-12 medium-9 large-10 columns">
+            {{#with message }}
+                <div class="callout {{ severity }}">{{ text }}</div>
+            {{/with}}
             {{{body}}}
         </section>
         <section class="admin-menu medium-order-1 small-12 medium-3 large-2 columns">

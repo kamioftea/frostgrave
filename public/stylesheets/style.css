@@ -3315,6 +3315,12 @@ table.hover tr:nth-of-type(even):hover {
 body, html {
   min-height: 100%; }
 
+.inline {
+  display: inline-block; }
+
+.callout {
+  border: none; }
+
 .splash-page {
   min-height: 100%;
   display: flex;
