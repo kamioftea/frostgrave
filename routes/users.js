@@ -7,7 +7,8 @@ const Rx = require('rxjs');
 require('../rxUtil/mergeMapPersist.js')(Rx.Observable);
 
 module.exports = (passport) => {
-    router.get('/access-key/:access_key', (req, res, next) => {
+    router.get('/access-key/:access_key',
+        (req, res, next) => {
             const {access_key} = req.params;
             req.logout();
 
@@ -15,8 +16,8 @@ module.exports = (passport) => {
                 .mergeMap(db => db.collection('users').findOne({access_key}))
                 .subscribe(
                     user => user
-                        ? res.render('user/access-key', {title: 'Frostgrave Roster Management - Access Key', user, access_key})
-                        : res.render('user/access-denied', {title: 'Frostgrave Roster Management - Access Key', access_key})
+                        ? res.render('user/access-key', {title: 'Access Key - Frostgrave Roster Management', user, access_key})
+                        : res.render('user/access-denied', {title: 'Access Key - Frostgrave Roster Management', access_key})
                     ,
                     err => res.redirect('/')
                 )
@@ -71,6 +72,57 @@ module.exports = (passport) => {
                     _ => res.render('user/access-success', { title: 'Frostgrave Roster Management - Password Set' }),
                     errHandler
                 );
+        }
+    );
+
+    router.get('/request-access',
+        (req, res) => {
+            const message = req.session.message;
+            req.session.message = null;
+            res.render('user/request-access', {title: 'Request Access - Frostgrave Roster Management', message})
+        }
+    );
+
+    router.post('/request-access',
+        (req, res) => {
+            const {email, name, password, password_check} = req.body;
+
+            if(!email || !name || !password)
+            {
+                req.session.message = "Email, name, and password must be provided";
+                return res.redirect(req.baseUrl + '/request-access');
+            }
+
+            if(password !== password_check)
+            {
+                req.session.message = "Passwords do not match";
+                return res.redirect(req.baseUrl + '/request-access');
+            }
+
+            db$.mergeMapPersist(db => db.collection('users').findOne({email}))
+                .validate(([, user]) => !user, "An account with that email already exists" )
+                .mergeMapPersist(_ => Rx.Observable.bindNodeCallback(bcrypt.hash)(password, 14))
+                .mergeMap(([db,,hash]) => db.collection('users').insertOne({
+                    name,
+                    email,
+                    password: hash,
+                    roles: [ ]
+                }))
+                .subscribe(
+                    result => res.redirect(req.baseUrl + '/request-access-success'),
+                    err => {
+                        req.session.message = err;
+                        return res.redirect(req.baseUrl + '/request-access');
+                    }
+                )
+        }
+    );
+
+    router.get('/request-access-success',
+        (req, res) => {
+            const message = req.session.message;
+            req.session.message = null;
+            res.render('user/request-access-success', {title: 'Success - Frostgrave Roster Management', message})
         }
     );
 
