@@ -3,6 +3,54 @@
 
 @include foundation-everything(true);
 
-body {
-    background: green;
+body, html {
+  min-height: 100%;
 }
+
+.inline {
+  display: inline-block;
+}
+
+.callout {
+  border: none;
+}
+
+.splash-page {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  background: url('/images/frostgrave-background.jpg') no-repeat center 15%;
+  background-size: cover;
+
+  & > .row {
+    padding: 2 * $global-padding;
+    background-color: rgba($white, 0.75);
+  }
+}
+
+.admin-container {
+  min-height: 100%;
+
+  .main {
+    min-height: 100%;
+    overflow-y: auto;
+
+    background: $light-gray;
+  }
+
+  .admin-menu {
+    min-height: 100%;
+    background: $black;
+    color: $white;
+  }
+
+}
+
+@each $name, $color in $foundation-palette {
+  .text-#{$name} {
+    color: $color
+  }
+}
+
