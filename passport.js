@@ -20,7 +20,11 @@ passport.use(new LocalStrategy(
     },
     (username, password, cb) => {
         db$.mergeMap(db => db.collection('users').findOne({email: username}))
-            .mergeMap(user => bcryptCompare(password, user.password).map(result => result ? user : false))
+            .mergeMap(
+                user =>
+                    (user ? bcryptCompare(password, user.password) : Rx.Observable.of(false))
+                        .map(result => result ? user : false)
+            )
             .subscribe(
                 user => cb(null, user),
                 err => cb(err)

@@ -22,4 +22,27 @@ body, html {
   }
 }
 
+.admin-container {
+  min-height: 100%;
+
+  .main {
+    min-height: 100%;
+    overflow-y: auto;
+
+    background: $light-gray;
+  }
+
+  .admin-menu {
+    min-height: 100%;
+    background: $black;
+    color: $white;
+  }
+
+}
+
+@each $name, $color in $foundation-palette {
+  .text-#{$name} {
+    color: $color
+  }
+}
 

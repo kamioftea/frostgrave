@@ -7,7 +7,9 @@
 			</div>
 		</div>
 		<div class="small-12 medium-6 columns">
+            <h1 class="text-primary text-right">Login</h1>
 			<form action="/user/login" method="post">
+                <input type="hidden" name="redirect_url" value="{{ redirect_url }}">
 				<label>
 					Email:
 					<input name="email" type="text"/>

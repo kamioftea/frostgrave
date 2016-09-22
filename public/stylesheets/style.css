@@ -376,7 +376,7 @@ html {
 body {
   padding: 0;
   margin: 0;
-  font-family: "Helvetica Neue", Helvetica, Roboto, Arial, sans-serif;
+  font-family: "Lato", Helvetica, Roboto, Arial, sans-serif;
   font-weight: normal;
   line-height: 1.5;
   color: #0a0a0a;
@@ -953,7 +953,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: "Helvetica Neue", Helvetica, Roboto, Arial, sans-serif;
+  font-family: "David Libre", "Lato", Helvetica, Roboto, Arial, sans-serif;
   font-weight: normal;
   font-style: normal;
   color: inherit;
@@ -3325,5 +3325,31 @@ body, html {
   .splash-page > .row {
     padding: 2rem;
     background-color: rgba(254, 254, 254, 0.75); }
+
+.admin-container {
+  min-height: 100%; }
+  .admin-container .main {
+    min-height: 100%;
+    overflow-y: auto;
+    background: #e6e6e6; }
+  .admin-container .admin-menu {
+    min-height: 100%;
+    background: #0a0a0a;
+    color: #fefefe; }
+
+.text-primary {
+  color: #2199e8; }
+
+.text-secondary {
+  color: #777; }
+
+.text-success {
+  color: #3adb76; }
+
+.text-warning {
+  color: #ffae00; }
+
+.text-alert {
+  color: #ec5840; }
 
 /*# sourceMappingURL=style.css.map */

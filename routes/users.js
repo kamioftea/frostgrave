@@ -1,29 +1,26 @@
 const express = require('express');
 const router = express.Router();
-const {db} = require('../db-conn.js');
+const {db$} = require('../db-conn.js');
 const bcrypt = require('bcryptjs');
+const Rx = require('rxjs');
+
+require('../rxUtil/mergeMapPersist.js')(Rx.Observable);
 
 module.exports = (passport) => {
     router.get('/access-key/:access_key', (req, res, next) => {
             const {access_key} = req.params;
+            req.logout();
 
-            db().then(db =>
-                db.collection('users')
-                    .findOne({access_key})
-                    .then(
-                        user => {
-                            db.close();
-                            user
-                                ? res.render('user/access-key', {title: 'Frostgrave Roster Management - Access Key', user, access_key})
-                                : res.render('user/access-denied', {title: 'Frostgrave Roster Management - Access Key', access_key})
-                        },
-                        err => {
-                            db.close();
-                            console.log(err);
-                            res.redirect('/');
-                        }
-                    )
-            )
+            db$
+                .mergeMap(db => db.collection('users').findOne({access_key}))
+                .subscribe(
+                    user => user
+                        ? res.render('user/access-key', {title: 'Frostgrave Roster Management - Access Key', user, access_key})
+                        : res.render('user/access-denied', {title: 'Frostgrave Roster Management - Access Key', access_key})
+                    ,
+                    err => res.redirect('/')
+                )
+
         }
     );
 
@@ -36,61 +33,55 @@ module.exports = (passport) => {
             const {access_key} = req.params;
             const {password, password_check} = req.body;
 
-            db().then(db =>
-                    db.collection('users')
-                        .findOne({access_key})
-                        .then(
-                            user => {
-                                if (!user) {
-                                    db.close();
-                                    return res.render('user/access-denied', {title: 'Frostgrave Roster Management - Access Key', access_key})
-                                }
+            const errHandler = err => {
+                console.log(err);
+                res.redirect('/');
+            };
 
-                                if (!password) {
-                                    db.close();
-                                    return res.render('user/access-key', {title: 'Frostgrave Roster Management - Access Key', user, access_key, message: "Password can't be empty"})
-                                }
 
-                                if (password != password_check) {
-                                    db.close();
-                                    return res.render('user/access-key', {title: 'Frostgrave Roster Management - Access Key', user, access_key, message: "Passwords must match"})
-                                }
+            var maybeUser$ = db$.mergeMapPersist(db => db.collection('users').findOne({access_key}));
 
-                                bcrypt.hash(password, 14, (err, hash) => {
-                                    if (err) {
-                                        db.close();
-                                        return (res.render('user/access-key', {
-                                            title:   'Frostgrave Roster Management - Access Key',
-                                                     user,
-                                                     access_key,
-                                            message: "Failed to generate password: " + err.message
-                                        }))
-                                    }
+            const [noUser$, user$] = maybeUser$.partition(([,user]) => !user);
+            noUser$.subscribe(
+                _ => res.render('user/access-denied', {title: 'Frostgrave Roster Management - Access Key', access_key}),
+                errHandler
+            );
 
-                                    db.collection('users')
-                                        .updateOne(
-                                            {_id: user._id},
-                                            {
-                                                $set:   {password: hash},
-                                                $unset: {access_key: 1}
-                                            },
-                                            () => {
-                                                db.close();
-                                                return res.redirect("/")
-                                            }
-                                        )
-                                })
-                            }
-                        ),
-                err => {
-                    console.log(err);
-                    res.redirect('/')
-                }
-            )
+            const [notValid$, valid$] = user$.partition(_ => !password || password != password_check);
+            notValid$.subscribe(
+                ([,user]) => res.render('user/access-key',
+                    {
+                        title:   'Frostgrave Roster Management - Access Key',
+                                 user,
+                                 access_key,
+                        message: password ? "Passwords must match" : "Password must not be empty"
+                    }),
+                errHandler
+            );
+
+            valid$
+                .mergeMapPersist(_ => Rx.Observable.bindNodeCallback(bcrypt.hash)(password, 14))
+                .mergeMap(([db, user, hash]) => db.collection('users').updateOne(
+                    {_id: user._id},
+                        {
+                            $set:   {password: hash},
+                            $unset: {access_key: 1}
+                        }))
+                .subscribe(
+                    _ => res.render('user/access-success', { title: 'Frostgrave Roster Management - Password Set' }),
+                    errHandler
+                );
         }
     );
 
-    router.post('/login', passport.authenticate('local', {successRedirect: '/', failureRedirect: '/'}));
+    router.post('/login',
+        passport.authenticate('local'),
+        (req, res) => res.redirect(req.body.redirect_url || '/')
+    );
+    router.post('/logout', (req, res) => {
+        req.logout();
+        res.redirect('/');
+    });
 
     return router;
-}
+};

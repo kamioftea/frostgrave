@@ -1,0 +1,27 @@
+<h1 class="text-primary">Users</h1>
+<div class="callout">
+    {{#each users }}
+        <div class="row">
+            <div class="small-3 columns">
+                {{ name }}
+            </div>
+            <div class="small-3 columns">
+                {{ email }}
+            </div>
+            <div class="small-3 columns">
+                {{#each roles}}
+                    <span class="label primary">{{.}}</span>
+                {{/each}}
+            </div>
+            <div class="small-3 columns">
+                {{#if access_key }}
+                    <a href="/user/access-key/{{ access_key }}"><kbd>{{ access_key }}</kbd></a>
+                {{else}}
+                    <form action="/admin/users/generate-access-key/{{ _id }}" method="post">
+                        <button type="submit" class="button tiny primary">Generate Access Key</button>
+                    </form>
+                {{/if}}
+            </div>
+        </div>
+    {{/each}}
+</div>

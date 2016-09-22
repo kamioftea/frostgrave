@@ -2,19 +2,8 @@ const prompt = require('prompt');
 const Rx = require('rxjs');
 const bcrypt = require('bcryptjs');
 
-Rx.Observable.prototype.validate = function (predicate, error) {
-    var source = this;
-    const [passed, failed] = source.partition(predicate);
-    return Rx.Observable.merge(passed, failed.mergeMap(_ => Rx.Observable.throw(error)))
-};
-
-Rx.Observable.prototype.mergeMapPersist = function (mapper, ...args) {
-    var source = this;
-    return source.mergeMap(
-        (data, ...args) => Rx.Observable.from(mapper(data, ...args)).map(result => [...data, result]),
-        ...args
-    );
-};
+require('../rxUtil/mergeMapPersist.js')(Rx.Observable);
+require('../rxUtil/validate.js')(Rx.Observable);
 
 const {db$, closeDb} = require('../db-conn.js');
 
@@ -91,6 +80,9 @@ Rx.Observable
                             email,
                             password: hash,
                             roles
+                        },
+                        $unset: {
+                            access_key: 1
                         }
                     }
                 )
