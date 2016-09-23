@@ -1,6 +1,9 @@
 @import 'settings';
 @import 'foundation';
 
+$fa-font-path: "//netdna.bootstrapcdn.com/font-awesome/4.6.3/fonts";
+@import "font-awesome";
+
 @include foundation-everything(true);
 
 body, html {
@@ -36,6 +39,7 @@ body, html {
   .main {
     min-height: 100%;
     overflow-y: auto;
+    padding: $global-padding;
 
     background: $light-gray;
   }

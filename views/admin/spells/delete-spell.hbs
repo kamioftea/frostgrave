@@ -1,0 +1,11 @@
+<h1 class="text-alert">Confirm Delete of Spell {{ spell.name }} from {{ school.name }}</h1>
+<form action="/admin/spells/delete-spell/{{ school._id }}/{{ _spell_id }}" method="post">
+    <div class="row">
+        <div class="columns small-6">
+            <a href="/admin/spells" class="button alert">Cancel</a>
+        </div>
+        <div class="columns small-6 text-right">
+            <button type="submit" class="button primary">Delete</button>
+        </div>
+    </div>
+</form>
