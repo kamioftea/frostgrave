@@ -173,7 +173,7 @@ router.post('/add-spell/:id',
                     $set: {
                         ['spells.' + _spell_id]: {
                             name,
-                            types,
+                            types: types || [],
                             description,
                             base_cost
                         }
@@ -213,7 +213,7 @@ router.get('/edit-spell/:id/:spell_id',
                                 school,
                                 spell,
                                 _spell_id,
-                        types:  spellTypes.map(name => ({name, checked: spell.types.includes(name)}))
+                        types:  spellTypes.map(name => ({name, checked: (spell.types || []).includes(name)}))
                     });
                 },
                 err => err => {
