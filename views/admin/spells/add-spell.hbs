@@ -1,13 +1,13 @@
-<div class="right">
+<div class="pull-right">
     <a href="/admin/spells" class="button hollow primary">
-        <i class="fa-arrow-left"></i>
+        <i class="fa fa-arrow-left"></i>
     </a>
 </div>
 
 <h1 class="text-primary">Add Spell to {{ school.name }} school</h1>
 
 <div class="row">
-    <div class="small-12 medium-8 large-6 columns">
+    <div class="small-12 large-8 columns">
         <div class="callout">
             <form action="/admin/spells/add-spell/{{ school._id }}" method="post">
                 <label>
@@ -29,7 +29,7 @@
                     Base Cost:
                     <input type="number" name="base_cost" />
                 </label>
-                <div class="right">
+                <div class="text-right">
                     <button type="submit" class="button primary">
                         <i class="fa fa-plus"></i> Add Spell
                     </button>

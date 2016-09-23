@@ -40,7 +40,7 @@ router.post('/add-school',
                     res.redirect(req.baseUrl)
                 },
                 err => {
-                    writeMessage(req, 'Adding school' + name + ' failed: ' + err, 'error');
+                    writeMessage(req, 'Adding school failed: ' + err, 'error');
                     res.redirect(req.baseUrl)
                 }
             );
@@ -57,7 +57,7 @@ router.get('/edit-school/:id',
             .subscribe(
                 school => res.render('admin/spells/edit-school', {title: 'Edit Spell School - Admin - Frostgrave Roster Management', layout: 'admin/layout', school}),
                 err => err => {
-                    writeMessage(req, 'Editing school' + name + ' failed: ' + err, 'error');
+                    writeMessage(req, 'Editing school failed: ' + err, 'error');
                     res.redirect(req.baseUrl)
                 }
             )
@@ -83,7 +83,7 @@ router.post('/edit-school/:id',
                     res.redirect(req.baseUrl);
                 },
                 err => {
-                    writeMessage(req, 'Editing school' + name + ' failed: ' + err, 'error');
+                    writeMessage(req, 'Editing school failed: ' + err, 'error');
                     res.redirect(req.baseUrl);
                 }
             );
@@ -100,7 +100,7 @@ router.get('/delete-school/:id',
             .subscribe(
                 school => res.render('admin/spells/delete-school', {title: 'Delete Spell School - Admin - Frostgrave Roster Management', layout: 'admin/layout', school}),
                 err => err => {
-                    writeMessage(req, 'Editing school' + name + ' failed: ' + err, 'error');
+                    writeMessage(req, 'Deleting school failed: ' + err, 'error');
                     res.redirect(req.baseUrl)
                 }
             )
