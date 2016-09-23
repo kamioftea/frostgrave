@@ -6,6 +6,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var passport = require('./passport.js');
 var session = require('express-session');
+var MongoStore = require('express-session-mongo');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -25,7 +26,12 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 //TODO: load secret from config
-app.use(session({ secret: 'frostgrave', resave: false, saveUninitialized: false }));
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'frostgrave',
+  resave: false, saveUninitialized: false,
+  store: new MongoStore({db: 'frostgrave-session'})
+}));
+
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -38,6 +44,7 @@ app.use(require('node-sass-middleware')({
       path.join(__dirname, 'node_modules', 'font-awesome', 'scss')
   ]
 }));
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
@@ -46,9 +53,7 @@ app.use('/admin', admin);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
+  res.render('error/not-found', {title: 'Not Found - Frostgrave Roster Management', url: req.baseUrl + req.url})
 });
 
 // error handlers
@@ -58,7 +63,7 @@ app.use(function(req, res, next) {
 if (app.get('env') === 'development') {
   app.use(function(err, req, res, next) {
     res.status(err.status || 500);
-    res.render('error', {
+    res.render('error/error', {
       message: err.message,
       error: err
     });
@@ -69,7 +74,7 @@ if (app.get('env') === 'development') {
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {
   res.status(err.status || 500);
-  res.render('error', {
+  res.render('error/error', {
     message: err.message,
     error: {}
   });

@@ -31,7 +31,9 @@ npm-debug.log.*
 
 # IDE
 /.idea/
-*.iml
 
 # Runtime data
 /data/
+
+*.css
+*.map
