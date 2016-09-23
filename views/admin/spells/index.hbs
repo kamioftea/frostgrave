@@ -2,6 +2,9 @@
 {{#each spell_schools}}
     <div class="callout">
         <div class="pull-right">
+            <a href="/admin/spells/add-spell/{{ _id }}" class="button hollow primary">
+                <i class="fa fa-plus"></i>
+            </a>
             <a href="/admin/spells/edit-school/{{ _id }}" class="button hollow primary">
                 <i class="fa fa-pencil"></i>
             </a>
@@ -38,11 +41,6 @@
                     </div>
                 </div>
             {{/each}}
-            <div class="columns">
-                <a href="/admin/spells/add-spell/{{ _id }}" class="button secondary expanded">
-                    <i class="fa fa-3x fa-plus"></i>
-                </a>
-            </div>
         </div>
     </div>
 {{/each}}
