@@ -39,7 +39,10 @@ app.use(require('node-sass-middleware')({
   src: path.join(__dirname, 'public'),
   dest: path.join(__dirname, 'public'),
   sourceMap: true,
-  includePaths: [path.join(__dirname, 'node_modules', 'foundation-sites', 'scss')]
+  includePaths: [
+      path.join(__dirname, 'node_modules', 'foundation-sites', 'scss'),
+      path.join(__dirname, 'node_modules', 'font-awesome', 'scss')
+  ]
 }));
 
 app.use(express.static(path.join(__dirname, 'public')));

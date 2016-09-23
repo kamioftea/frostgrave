@@ -1,0 +1,40 @@
+<div class="right">
+    <a href="/admin/spells" class="button hollow primary">
+        <i class="fa-arrow-left"></i>
+    </a>
+</div>
+
+<h1 class="text-primary">Edit Spell {{ spell.name }} in {{ school.name }} school</h1>
+
+<div class="row">
+    <div class="small-12 medium-8 large-6 columns">
+        <div class="callout">
+            <form action="/admin/spells/edit-spell/{{ school._id }}/{{ _spell_id }}" method="post">
+                <label>
+                    Name:
+                    <input type="text" name="name" value="{{ spell.name }}"/>
+                </label>
+                <h2>Types</h2>
+                {{#each types }}
+                    <label>
+                        <input type="checkbox" name="types" value="{{ name }}" {{#if checked}}checked{{/if}} />
+                        {{ name }}
+                    </label>
+                {{/each}}
+                <label>
+                    Description:
+                    <textarea name="description" rows="3">{{ spell.description }}</textarea>
+                </label>
+                <label>
+                    Base Cost:
+                    <input type="number" name="base_cost" value="{{ spell.base_cost }}"/>
+                </label>
+                <div class="right">
+                    <button type="submit" class="button primary">
+                        <i class="fa fa-pencil"></i> Edit Spell
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -6,7 +6,7 @@ const {readMessage} = require('../../flashMessage');
 const adminPages = [
     {url: '/users', label: 'Users', router: require('./users')},
     {url: '/events', label: 'Events'},
-    {url: '/spells', label: 'Spells'},
+    {url: '/spells', label: 'Spells', router: require('./spells.js')},
     {url: '/soldiers', label: 'Soldiers'},
 ];
 

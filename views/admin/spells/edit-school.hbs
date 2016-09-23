@@ -1,0 +1,25 @@
+<div class="pull-right">
+    <a href="/admin/spells" class="button hollow primary">
+        <i class="fa fa-arrow-left"></i>
+    </a>
+</div>
+
+<h1 class="text-primary">Edit Spell School</h1>
+
+<div class="row">
+    <div class="small-12 medium-8 large-6 columns">
+        <div class="callout">
+            <form action="/admin/spells/edit-school/{{ school._id}}" method="post">
+                <label>
+                    Name:
+                    <input type="text" name="name" value="{{ school.name }}"/>
+                </label>
+                <div class="text-right">
+                    <button type="submit" class="button primary">
+                        <i class="fa fa-pencil"></i> Edit School
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
