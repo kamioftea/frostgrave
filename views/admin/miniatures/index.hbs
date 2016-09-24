@@ -1,0 +1,52 @@
+<h1>Miniatures</h1>
+
+<h2>Base Wizard Stats</h2>
+
+<div class="callout">
+    {{# if wizard }}
+        <div class="row">
+            <div class="small-12 large-6 columns">
+                {{> admin__miniatures__miniature wizard url=(concat base_url '/edit/' wizard._id) }}
+            </div>
+        </div>
+    {{ else }}
+        <a href="{{ base_url }}/add/wizard" class="button secondary">
+            <i class="fa fa-plus"></i> Add Wizard
+        </a>
+    {{/if}}
+</div>
+
+<div class="callout">
+    {{# if apprentice }}
+        <div class="row">
+            <div class="small-12 large-6 columns">
+                {{> admin__miniatures__miniature apprentice url=(concat base_url '/edit/' apprentice._id) }}
+            </div>
+            {{# with sample_apprentice }}
+                <div class="small-12 large-6 columns">
+                    <h3>Starting Stats</h3>
+                    {{> admin__miniatures__stat_block }}
+                </div>
+            {{/with}}
+        </div>
+    {{ else }}
+        <a href="{{ base_url }}/add/apprentice" class="button secondary">
+            <i class="fa fa-plus"></i> Add Apprentice Modifiers
+        </a>
+    {{/if}}
+</div>
+
+<h2>Soldiers</h2>
+
+<div class="callout">
+    <div class="row">
+        {{#each soldiers }}
+            <div class="small-12 large-6 columns">
+                {{> admin__miniatures__miniature url=(concat ../base_url '/edit/' _id) }}
+            </div>
+        {{/each}}
+    </div>
+    <a href="{{ base_url }}/add/soldier" class="button secondary">
+        <i class="fa fa-plus"></i> Add Soldier
+    </a>
+</div>

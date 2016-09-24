@@ -1,0 +1,14 @@
+<label>
+    {{#if label }}{{ label }}{{ else }}{{ name }}{{/if}}
+
+    {{#if locked }}
+        <input type="hidden" name="{{ name }}" value="{{ value }}">
+    {{ else }}
+        <input type="{{#if type }}{{ type }}{{else}}text{{/if}}" name="{{ name }}" value="{{ value }}">
+    {{/if}}
+</label>
+{{#if locked }}
+    <p>
+        <strong>{{ value }}</strong>
+    </p>
+{{/if}}

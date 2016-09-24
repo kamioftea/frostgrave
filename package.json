@@ -16,6 +16,7 @@
     "express-session-mongo": "^0.1.0",
     "font-awesome": "^4.6.3",
     "foundation-sites": "^6.2.3",
+    "glob": "^7.1.0",
     "hbs": "~4.0.0",
     "mongodb": "^2.2.9",
     "morgan": "~1.7.0",

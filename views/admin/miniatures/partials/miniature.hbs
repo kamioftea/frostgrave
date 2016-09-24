@@ -1,0 +1,32 @@
+<div class="row">
+    <div class="small-6 columns">
+        <h3>{{ name }}</h3>
+    </div>
+    <div class="small-2 columns">
+        {{type}}
+    </div>
+    {{#if url }}
+    <div class="small-2 columns text-right">
+        {{cost}}gp
+    </div>
+    <div class="small-2 columns text-right">
+        <a href="{{ url }}" class="button hollow primary small">
+            <i class="fa fa-pencil"></i>
+        </a>
+    </div>
+    {{ else }}
+        <div class="small-4 columns text-right">
+            {{cost}}gp
+        </div>
+    {{/if}}
+</div>
+{{> admin__miniatures__stat_block stat_block }}
+{{#if items }}
+    <p><strong>Items:</strong> {{join items ', '}}</p>
+{{/if}}
+{{#if notes }}
+    <p>
+        <strong>Notes:</strong>
+        {{notes}}
+    </p>
+{{/if}}

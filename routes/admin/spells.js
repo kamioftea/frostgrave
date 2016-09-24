@@ -1,6 +1,3 @@
-/**
- * Created by Jeff on 22/09/2016.
- */
 const express = require('express');
 const router = express.Router();
 const {db$} = require('../../db-conn.js');

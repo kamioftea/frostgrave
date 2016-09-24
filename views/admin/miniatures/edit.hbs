@@ -1,0 +1,36 @@
+<h1>Edit {{#if miniature.name }}{{ miniature.name }}{{else}}Miniature{{/if}}</h1>
+<div class="callout">
+    <div class="row">
+        <div class="small-12 large-8 columns">
+            <form action="{{ url }}" method="post">
+                <div class="row">
+                    <div class="small-6 columns">
+                        {{> form__lockable_input label="Name" name="name" value=miniature.name locked=locked.name }}
+                    </div>
+                    <div class="small-3 columns text-right">
+                        {{> form__lockable_input label="Type" name="type" value=miniature.type locked=true }}
+                    </div>
+                    <div class="small-3 columns text-right">
+                        {{> form__lockable_input label="Cost" name="cost" value=miniature.cost locked=locked.cost }}
+                    </div>
+                </div>
+
+                <h2>Stat Block</h2>
+                {{> admin__miniatures__stat_form miniature.stat_block }}
+
+                {{> form__lockable_input label="Items" name="items" value=(join miniature.items ', ') locked=false }}
+                <label>
+                    Notes:
+                    <textarea rows="3" name="notes">{{miniature.notes}}</textarea>
+                </label>
+
+                <div class="text-right">
+                    <button type="submit" class="button primary">
+                        <i class="fa fa-pencil"></i>
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
