@@ -1,0 +1,7 @@
+<form action="{{ url }}" method="post">
+    {{> form__labelled_input label='Name' name='name' value=event.name }}
+    {{> form__labelled_input label='Points Limit' type='number' name='points_limit' value=event.points_limit }}
+    {{> form__labelled_input label='Model Limit' type='number' name='model_limit' value=event.model_limit }}
+    {{> form__labelled_checkbox label='Apprentice Allowed?' name='apprentice_allowed' value='1' checked=event.apprentice_allowed }}
+    {{> form__submit_row label='Save Event' }}
+</form>

@@ -1,0 +1,46 @@
+<table>
+    <thead>
+        <tr>
+            <th>
+                <label for="{{ id_prefix }}move">Move</label>
+            </th>
+            <th>
+                <label for="{{ id_prefix }}fight">Fight</label>
+            </th>
+            <th>
+                <label for="{{ id_prefix }}shoot">Shoot</label>
+            </th>
+            <th>
+                <label for="{{ id_prefix }}armour">Armour</label>
+            </th>
+            <th>
+                <label for="{{ id_prefix }}will">Will</label>
+            </th>
+            <th>
+                <label for="{{ id_prefix }}health">Health</label>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                <input id="{{ id_prefix }}move" name="stat_block[move]" type="number" value="{{ move }}"/>
+            </td>
+            <td>
+                <input id="{{ id_prefix }}fight" name="stat_block[fight]" type="number" value="{{ fight }}"/>
+            </td>
+            <td>
+                <input id="{{ id_prefix }}shoot" name="stat_block[shoot]" type="number" value="{{ shoot }}"/>
+            </td>
+            <td>
+                <input id="{{ id_prefix }}armour" name="stat_block[armour]" type="number" value="{{ armour }}"/>
+            </td>
+            <td>
+                <input id="{{ id_prefix }}will" name="stat_block[will]" type="number" value="{{ will }}"/>
+            </td>
+            <td>
+                <input id="{{ id_prefix }}health" name="stat_block[health]" type="number" value="{{ health }}"/>
+            </td>
+        </tr>
+    </tbody>
+</table>

@@ -1,0 +1,4 @@
+<label>
+    {{#if label }}{{ label }}{{ else }}{{ name }}{{/if}}
+    <input type="{{#if type }}{{ type }}{{else}}text{{/if}}" name="{{ name }}" value="{{ value }}">
+</label>

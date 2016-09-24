@@ -1,0 +1,49 @@
+<h1 class="text-primary">Spells</h1>
+{{#each spell_schools}}
+    <div class="callout">
+        <div class="pull-right">
+            <a href="/admin/spells/add-spell/{{ _id }}" class="button hollow primary">
+                <i class="fa fa-plus"></i>
+            </a>
+            <a href="/admin/spells/edit-school/{{ _id }}" class="button hollow primary">
+                <i class="fa fa-pencil"></i>
+            </a>
+            <a href="/admin/spells/delete-school/{{ _id }}" class="button hollow alert">
+                <i class="fa fa-trash"></i>
+            </a>
+        </div>
+        <h1>{{ name }}</h1>
+        <div class="row small-up-1 medium-up-2 large-up-4">
+            {{#each spells }}
+                <div class="columns">
+                    <div class="callout secondary">
+                        <h2 class="text-center">{{ name }}</h2>
+                        <p class="text-center">
+                            {{#each types}}
+                                {{ . }}
+                                {{#unless @last}} - {{/unless}}
+                            {{ else }}
+                                {{ types }}
+                            {{/each}}
+                        </p>
+                        <p><small>{{ description }}</small></p>
+                        <div class="pull-left">
+                            <a href="/admin/spells/edit-spell/{{ ../_id }}/{{ @key }}" class="button hollow primary">
+                                <i class="fa fa-pencil"></i>
+                            </a>
+                        </div>
+                        <div class="pull-right">
+                            <a href="/admin/spells/delete-spell/{{ ../_id }}/{{ @key }}" class="button hollow alert">
+                                <i class="fa fa-trash"></i>
+                            </a>
+                        </div>
+                        <h2 class="text-center">{{ base_cost }}</h2>
+                    </div>
+                </div>
+            {{/each}}
+        </div>
+    </div>
+{{/each}}
+<a href="/admin/spells/add-school" class="button secondary expanded">
+    <i class="fa fa-3x fa-plus"></i>
+</a>

@@ -1,0 +1,30 @@
+<h1 class="text-primary">Users</h1>
+<div class="callout">
+    {{#each users }}
+        <div class="row">
+            <div class="small-2 columns">
+                {{ name }}
+            </div>
+            <div class="small-3 columns">
+                {{ email }}
+            </div>
+            <div class="small-2 columns">
+                {{#each roles}}
+                    <span class="label primary">{{.}}</span>
+                {{/each}}
+            </div>
+            <div class="small-5 columns text-right">
+                {{#each actions }}
+                    {{#if get }}
+                        <a href="{{ get }}" class="button tiny {{ color }}">{{ label }}</a>
+                    {{/if}}
+                    {{#if post}}
+                        <form action="{{ post }}" method="post" class="inline">
+                            <button type="submit" class="button tiny {{ color }}">{{ label }}</button>
+                        </form>
+                    {{/if}}
+                {{/each}}
+            </div>
+        </div>
+    {{/each}}
+</div>

@@ -1,0 +1,32 @@
+<div class="splash-page">
+	<div class="row align-middle">
+		<div class="small-12 medium-6 columns">
+			<div class="text-center">
+				<img src="/images/frostgrave-banner.png" alt="Frostgrave"/>
+				<h1>Frostgrave Roster Management</h1>
+			</div>
+		</div>
+		<div class="small-12 medium-6 columns">
+            <h1 class="text-primary text-right">Login</h1>
+			<form action="/user/login" method="post">
+                <input type="hidden" name="redirect_url" value="{{ redirect_url }}">
+				<label>
+					Email:
+					<input name="email" type="text"/>
+				</label>
+				<label>
+					Password:
+					<input name="password" type="password"/>
+				</label>
+				<label class="text-right">
+					<button class="button primary">
+						Login
+					</button>
+				</label>
+			</form>
+			<a href="/user/request-access">
+				Request Account ...
+			</a>
+		</div>
+	</div>
+</div>
