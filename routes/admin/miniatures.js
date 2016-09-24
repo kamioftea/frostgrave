@@ -71,7 +71,7 @@ router.get('/add/:type',
         res.render(
             'admin/miniatures/edit',
             {
-                title:  'Edit ' + miniature.name + ' - Admin - Frostgrave Roster Management',
+                title:  'Add ' + miniature.name + ' - Admin - Frostgrave Roster Management',
                 layout: 'admin/layout',
                 url:    req.baseUrl + '/add',
                         miniature,
@@ -157,6 +157,47 @@ router.post('/edit/:id',
                 res.redirect(req.baseUrl)
             }
         )
+    }
+);
+
+router.get('/delete/:id',
+    (req, res) => {
+        const {id} = req.params;
+        const _id = ObjectId(id);
+
+        db$.mergeMap(db => db.collection('miniatures').findOne({_id}))
+            .subscribe(
+                miniature =>
+                    res.render(
+                        'admin/miniatures/delete',
+                        {
+                            title:  'Delete ' + miniature.name + ' - Admin - Frostgrave Roster Management',
+                            layout: 'admin/layout',
+                            base_url: req.baseUrl,
+                                    miniature,
+                        }
+                    ),
+                err => {
+                    console.error(err);
+                    res.redirect(req.baseUrl)
+                }
+            )
+    }
+);
+
+router.post('/delete/:id',
+    (req, res) => {
+        const {id} = req.params;
+        const _id = ObjectId(id);
+
+        db$.mergeMap(db => db.collection('miniatures').removeOne({_id}))
+            .subscribe(
+                _ => res.redirect(req.baseUrl),
+                err => {
+                    console.error(err);
+                    res.redirect(req.baseUrl)
+                }
+            )
     }
 );
 

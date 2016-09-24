@@ -5,14 +5,21 @@
     <div class="small-2 columns">
         {{type}}
     </div>
-    {{#if url }}
+    {{#if (concat edit_url delete_url) }}
     <div class="small-2 columns text-right">
         {{cost}}gp
     </div>
     <div class="small-2 columns text-right">
-        <a href="{{ url }}" class="button hollow primary small">
-            <i class="fa fa-pencil"></i>
-        </a>
+        {{#if edit_url}}
+            <a href="{{ edit_url }}" class="button hollow primary small">
+                <i class="fa fa-pencil"></i>
+            </a>
+        {{/if}}
+        {{#if delete_url}}
+            <a href="{{ delete_url }}" class="button hollow alert small">
+                <i class="fa fa-trash"></i>
+            </a>
+        {{/if}}
     </div>
     {{ else }}
         <div class="small-4 columns text-right">

@@ -6,7 +6,7 @@
     {{# if wizard }}
         <div class="row">
             <div class="small-12 large-6 columns">
-                {{> admin__miniatures__miniature wizard url=(concat base_url '/edit/' wizard._id) }}
+                {{> admin__miniatures__miniature wizard edit_url=(concat base_url '/edit/' wizard._id) }}
             </div>
         </div>
     {{ else }}
@@ -20,7 +20,7 @@
     {{# if apprentice }}
         <div class="row">
             <div class="small-12 large-6 columns">
-                {{> admin__miniatures__miniature apprentice url=(concat base_url '/edit/' apprentice._id) }}
+                {{> admin__miniatures__miniature apprentice edit_url=(concat base_url '/edit/' apprentice._id) }}
             </div>
             {{# with sample_apprentice }}
                 <div class="small-12 large-6 columns">
@@ -42,7 +42,7 @@
     <div class="row">
         {{#each soldiers }}
             <div class="small-12 large-6 columns">
-                {{> admin__miniatures__miniature url=(concat ../base_url '/edit/' _id) }}
+                {{> admin__miniatures__miniature edit_url=(concat ../base_url '/edit/' _id) delete_url=(concat ../base_url '/delete/' _id) }}
             </div>
         {{/each}}
     </div>

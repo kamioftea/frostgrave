@@ -43,7 +43,7 @@ glob('./views/**/partials/**/*.hbs', (err, files) =>
         )
 );
 hbs.registerHelper('join', (arr, separator=', ') => [...(arr || [])].join(separator));
-hbs.registerHelper('concat', (...pieces) => pieces.slice(0, -1).join(''));
+hbs.registerHelper('concat', (...pieces) => pieces.length > 1 ? pieces.slice(0, -1).join('') : '');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
