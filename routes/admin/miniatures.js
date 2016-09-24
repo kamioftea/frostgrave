@@ -23,7 +23,9 @@ router.get('/',
 
         Rx.Observable.zip(wizard$, apprentice$, soldiers$).subscribe(
             ([wizard, apprentice, soldiers]) => {
-                const sample_apprentice = objMap((a, b) => parseInt(a) + (parseInt(b) || 0))(wizard.stat_block || {}, apprentice.stat_block || {});
+                const sample_apprentice = wizard && apprentice
+                    ? objMap((a, b) => parseInt(a) + (parseInt(b) || 0))(wizard.stat_block || {}, apprentice.stat_block || {})
+                    : {};
                 res.render(
                     'admin/miniatures/index',
                     {
