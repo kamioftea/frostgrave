@@ -8,7 +8,7 @@ const {writeMessage} = require('../../flashMessage');
 require('../../rxUtil/validate')(Rx.Observable);
 require('../../rxUtil/mergeMapPersist')(Rx.Observable);
 
-const objMap = (f) => (a, b) =>
+const objMap = (f) => (a = {}, b = {}) =>
     Object.keys(a).reduce(
         (acc, key) => Object.assign({}, acc, {[key]: f(a[key], b[key])}),
         {}
@@ -90,9 +90,9 @@ router.post('/add',
         db$.mergeMap(db => db.collection('miniatures').insertOne({
             type,
             name,
-            cost,
-            stat_block,
-            items: (items || '').split(/\s*,\s*/).filter(Boolean),
+            cost:       parseInt(cost),
+            stat_block: objMap(a => parseInt(a))(stat_block),
+            items:      (items || '').split(/\s*,\s*/).filter(Boolean),
             notes
         })).subscribe(
             _ => res.redirect(req.baseUrl),
@@ -145,12 +145,14 @@ router.post('/edit/:id',
         db$.mergeMap(db => db.collection('miniatures').updateOne(
             {_id},
             {
-                type,
-                name,
-                cost,
-                stat_block,
-                items: (items || '').split(/\s*,\s*/).filter(Boolean),
-                notes
+                $set: {
+                    type,
+                    name,
+                    cost:       parseInt(cost),
+                    stat_block: objMap(a => parseInt(a))(stat_block),
+                    items:      (items || '').split(/\s*,\s*/).filter(Boolean),
+                    notes
+                }
             }
         )).subscribe(
             _ => res.redirect(req.baseUrl),
@@ -173,10 +175,10 @@ router.get('/delete/:id',
                     res.render(
                         'admin/miniatures/delete',
                         {
-                            title:  'Delete ' + miniature.name + ' - Admin - Frostgrave Roster Management',
-                            layout: 'admin/layout',
+                            title:    'Delete ' + miniature.name + ' - Admin - Frostgrave Roster Management',
+                            layout:   'admin/layout',
                             base_url: req.baseUrl,
-                                    miniature,
+                                      miniature,
                         }
                     ),
                 err => {
