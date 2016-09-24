@@ -1,0 +1,39 @@
+<div class="pull-right">
+    <a href="{{ base_url }}/add" class="button hollow primary">
+        <i class="fa fa-plus"></i>
+    </a>
+</div>
+
+<h1 class="text-primary">Events</h1>
+
+<div class="callout">
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Points Limit</th>
+                <th>Model Limit</th>
+                <th>Apprentice?</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each events }}
+                <tr>
+                    <td>{{ name }}</td>
+                    <td>{{ points_limit }}</td>
+                    <td>{{ model_limit }}</td>
+                    <td>{{> tick_cross apprentice_allowed }}</td>
+                    <td>
+                        <a href="{{ ../base_url }}/edit/{{ _id }}" class="button hollow primary">
+                            <i class="fa fa-pencil"></i>
+                        </a>
+                        <a href="{{ ../base_url }}/delete/{{ _id }}" class="button hollow alert">
+                            <i class="fa fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+            {{/each }}
+        </tbody>
+    </table>
+</div>

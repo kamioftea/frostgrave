@@ -1,9 +1,9 @@
-<h1 class="text-alert">Delete {{#if miniature.name }}{{ miniature.name }}{{else}}Miniature{{/if}}</h1>
+<h1 class="text-alert">Delete Event</h1>
 <div class="callout">
     <div class="row">
         <div class="small-12 large-8 columns">
-            <form action="{{ base_url }}/delete/{{ miniature._id }}" method="post">
-                <p>Please confirm deletion of {{ miniature.name }}</p>
+            <form action="{{ base_url }}/delete/{{ event._id }}" method="post">
+                <p>Please confirm deletion of {{ event.name }}</p>
 
                 <div class="row">
                     <div class="small-6 columns">
@@ -16,7 +16,7 @@
                     <div class="small-6 columns text-right">
                         <button type="submit" class="button alert">
                             <i class="fa fa-trash"></i>
-                            Delete
+                            Delete Event
                         </button>
                     </div>
                 </div>
