@@ -1,0 +1,12 @@
+{{#define rosterList }}
+    <ul class="small-block-grid-2 medium-block-grid-4 large-block-grid-6">
+        {{#each filteredRosters key=id}}
+            <li>
+                <a href="/roster/{{ id }}" onClick="setModeRoster" data-roster-id="{{ id }}">
+                    <img class="img-responsive" src="{{ wizard.imgUrl }}" alt="" />
+                    <h2>{{ name }}</h2>
+                </a>
+            </li>
+        {{/each}}
+    </ul>
+{{/define }}

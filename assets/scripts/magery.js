@@ -1,10 +1,10 @@
 import { actions } from './actions.js'
 
 export const mapState = state => ({
-    modeHandler:     getModeHandler(state.mode)
-    sidebar:         buildSidebar(state)
+    modeHandler:     getModeHandler(state.mode),
+    sidebar:         buildSidebar(state),
     filteredRosters: buildFilteredRosterList(state)
-})
+});
 
 function getModeHandler(mode) {
     switch (mode) {
@@ -14,11 +14,11 @@ function getModeHandler(mode) {
     }
 }
 
-function buildSidebar = state => ({
+const buildSidebar = state => ({
     filters: [
         {
             id: "events",
-            filterType: "filterGroup"
+            filterType: "filterGroup",
             label: "Events",
             expanded: false,
             filters: [

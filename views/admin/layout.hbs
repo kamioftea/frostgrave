@@ -6,14 +6,14 @@
     <link rel='stylesheet' href='/stylesheets/style.css'/>
 </head>
 <body>
-    <div class="admin-container row expanded">
+    <div class="main-container row expanded">
         <section class="main medium-order-2 small-12 medium-9 large-10 columns">
             {{#with message }}
                 <div class="callout {{ severity }}">{{ text }}</div>
             {{/with}}
             {{{body}}}
         </section>
-        <section class="admin-menu medium-order-1 small-12 medium-3 large-2 columns">
+        <section class="sidebar-menu medium-order-1 small-12 medium-3 large-2 columns">
             <div class="text-center">
                 <img src="/images/frostgrave-banner.png" alt="Frostgrave"/>
                 <h6>Frostgrave Roster Management</h6>
