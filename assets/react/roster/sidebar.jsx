@@ -87,9 +87,15 @@ export const Sidebar =
                         onClick={() => toggleAndSetMode('users', user._id)} />
                 : null;
 
+            const adminLink = (user.roles || []).includes('Admin')
+                ? <a href="/admin" className="button alert hollow expanded">
+                    <i className="fa fa-cogs" /> Admin
+                  </a>
+                : null;
+
             return (
                 <div>
-                    <div className="text-center">
+                    <div className="text-center" onClick={preventDefault(setModeRosterList)} style={{cursor: 'pointer'}}>
                         <img src="/images/frostgrave-banner.png" alt="Frostgrave"/>
                         <h5>Frostgrave Roster Management</h5>
                     </div>
@@ -101,52 +107,15 @@ export const Sidebar =
                     <br />
                     <p>
                         <a href="#"
-                           className="button secondary hollow expanded"
+                           className="button primary hollow expanded"
                            onClick={preventDefault(setModeAccount)}>
                             <i className="fa fa-user" /> My Account
                         </a>
+                    </p>
+                    <p>
+                        {adminLink}
                     </p>
                 </div>
             )
         }
     );
-
-
-/**
- {{#define sidebar }}
- {{#each filters key=id }}
- {{#call filterType }}{{/call}}
- {{/each }}
- <hr>
- <a href="/user/account" onClick="setModeAccount">
- Account
- </a>
- {{#if admin}}
- <hr>
- <a href="/admin">
- Admin
- </a>
- {{/if }}
- {{/define }}
-
- {{#define filterGroup}}
- <nav class="filter-group {{ expanded }}">
- <a href="#" onClick="expandFilterGroup" data-filter-group="{{ id }}" >
- {{ label }}
- </a>
- <ul>
- {{#each filters key=id }}
- {{#filter . }}{{/filter}}
- {{/each }}
- </ul>
- </nav>
- {{/define }}
-
- {{#define filter }}
- <li class={{ selected }}>
- <a href="#" onClick="toggleFilter" data-filter="{{ id }}">
- {{ label }}
- </a>
- </li>
- {{/define }}
- */

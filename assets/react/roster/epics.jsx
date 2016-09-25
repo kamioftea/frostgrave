@@ -6,7 +6,7 @@ import "rxjs/add/observable/fromPromise";
 import "rxjs/add/observable/empty";
 
 import {
-    actions, receiveData
+    actions, receiveData, rosterAdded
 } from './actions.jsx';
 
 const makeJsonRequest = (url, body, method = 'GET') => {
@@ -42,6 +42,12 @@ const requestDataEpic = action$ =>
         .switchMap(() => makeJsonRequest('/api/data'))
         .map(({error, ...data}) => receiveData(error, data));
 
+const addRosterEpic = action$ =>
+    action$
+        .ofType(actions.ADD_ROSTER)
+        .switchMap(({name, event_id, spell_school_id}) => makeJsonRequest('/api/roster', {name, event_id, spell_school_id}, 'post' ))
+        .map(({error, roster}) => rosterAdded(error, roster));
+
 const loggingEpic = action$ => {
     action$.subscribe(
         _ => console.log(_),
@@ -50,9 +56,9 @@ const loggingEpic = action$ => {
     return Observable.empty()
 };
 
-
 const epics = combineEpics(
     requestDataEpic,
+    addRosterEpic,
     loggingEpic,
 );
 

@@ -5,6 +5,9 @@ import ReactDOM from "react-dom";
 import {connect} from "react-redux";
 import {actions} from "./actions.jsx";
 import {Sidebar} from "./sidebar.jsx"
+import {RosterList} from "./roster-list.jsx";
+import {Roster} from "./roster.jsx";
+import {AddRoster} from "./add-roster.jsx";
 
 export const RosterWrapper =
     connect(
@@ -15,8 +18,9 @@ export const RosterWrapper =
             <div className="main-container row expanded">
                 <div className="main medium-order-2 small-12 medium-8 large-9 columns">
                     {{
-                        [actions.MODE_ROSTER_LIST]: 'Roster List',
-                        [actions.MODE_ROSTER]:      'Roster',
+                        [actions.MODE_ROSTER_LIST]: <RosterList />,
+                        [actions.MODE_ROSTER]:      <Roster />,
+                        [actions.MODE_ADD_ROSTER]:  <AddRoster />,
                         [actions.MODE_ACCOUNT]:     'Account'
                     }[mode]}
                 </div>

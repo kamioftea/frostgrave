@@ -11,7 +11,7 @@ import {requestData} from "./actions.jsx"
 /*
  * - ~Setup redux~
  * - ~Fetch data~
- * - render sidebar
+ * - ~render sidebar~
  * - add roster flow
  * - render roster list
  * - view roster
