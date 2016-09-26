@@ -6,7 +6,7 @@ import {preventDefault} from '../preventDefault.jsx';
 import {objectEntries} from '../iterators.jsx';
 import {ClickToEdit} from '../click-to-edit.jsx';
 import {ImageUpload} from '../image-upload.jsx';
-import {setModeRosterList, updateRoster, addItem, removeItem, uploadFile} from './actions.jsx';
+import {setModeRosterList, updateRoster, addItem, removeItem, uploadFile, addApprentice, removeApprentice} from './actions.jsx';
 
 const modifier = (value) => parseInt(value) < 0 ? parseInt(value) : '+' + parseInt(value);
 
@@ -60,7 +60,7 @@ const ItemRow = ({item: {name, cost}, onRemove}) => (
 
 const Miniature = ({
     roster_id, target, name, label, image_url, stat_block, items = [], notes, editable,
-    availableItems, updateRoster, addItem, removeItem, uploadFile
+    availableItems, updateRoster, addItem, removeItem, uploadFile, remove
 }) => {
     // merge each item's bonus into the stat line
     const stat_bonuses = items.reduce(
@@ -81,6 +81,17 @@ const Miniature = ({
                                     value={item.name}
                                     onClick={preventDefault(() => addItem(roster_id, target, item))}>{item.name} - {item.cost}gp</option>)}
             </select>)
+        : null;
+
+    const removeRow = typeof remove === 'function' && editable
+        ? (
+            <div className="text-right">
+                <a href="#"
+                   className="button primary hollow"
+                   onClick={preventDefault(() => remove())}>
+                    <i className="fa fa-trash"/>
+                </a>
+            </div>)
         : null;
 
     return <div className="callout miniature-container">
@@ -119,7 +130,7 @@ const Miniature = ({
                     <ClickToEdit editable={editable}
                                  value={notes || ''}
                                  onSubmit={value => updateRoster(roster_id, target + '.notes', value)}/>
-
+                    {removeRow}
                 </div>
             </div>
         </div>;
@@ -127,15 +138,16 @@ const Miniature = ({
 
 export const Roster =
     connect(
-        ({current_roster_id, rosters, spell_schools, user: {_id: user_id}}) => ({current_roster_id, rosters, spell_schools, user_id}),
-        {setModeRosterList, updateRoster, addItem, removeItem, uploadFile}
+        ({current_roster_id, rosters, spell_schools, events, user: {_id: user_id}}) => ({current_roster_id, rosters, spell_schools, events, user_id}),
+        {setModeRosterList, updateRoster, addItem, removeItem, uploadFile, addApprentice, removeApprentice}
     )(
         ({
-            current_roster_id, rosters, spell_schools, user_id,
-            setModeRosterList, updateRoster, addItem, removeItem, uploadFile
+            current_roster_id, rosters, spell_schools, events, user_id,
+            setModeRosterList, updateRoster, addItem, removeItem, uploadFile, addApprentice, removeApprentice
         }) => {
             const current_roster = rosters.filter(_ => _._id === current_roster_id)[0] || {};
             const spell_school = spell_schools.filter(_ => _._id === current_roster.wizard.spell_school_id)[0];
+            const event = events.filter(_ => _._id === current_roster.event_id)[0];
             const editable = current_roster.user_id === user_id;
 
             const wizard_items = [
@@ -165,6 +177,34 @@ export const Roster =
                 return filters.reduce((list, filter) => filter(list), itemList);
             };
 
+            const applyStatModifiers = (stat_block, modifiers) =>
+                [...objectEntries(stat_block)].reduce((acc, [key, value]) => ({...acc, [key]: parseInt(value) + parseInt(modifiers[key] || 0)}), {});
+
+            const apprenticeElement = current_roster.apprentice
+                ? <Miniature roster_id={current_roster_id}
+                             target="apprentice"
+                             {...current_roster.apprentice}
+                             stat_block={applyStatModifiers(current_roster.wizard.stat_block, current_roster.apprentice.stat_modifiers)}
+                             label="Apprentice"
+                             editable="editable"
+                             availableItems={filterItems(current_roster.apprentice.items, wizard_items)}
+                             updateRoster={updateRoster}
+                             addItem={addItem}
+                             removeItem={removeItem}
+                             uploadFile={uploadFile}
+                             remove={() => removeApprentice(current_roster_id)}/>
+                : (editable && event && event.apprentice_allowed
+                    ? (
+                        <a href="#"
+                         className="button primary hollow"
+                         onClick={preventDefault(() => addApprentice(current_roster_id))}>
+                            <i className="fa fa-plus"/>
+                            {' '}
+                            Add Apprentice (200gc)
+                        </a> )
+
+                    : null );
+
             return <div>
                 <div className="row">
                     <div className="small-10 columns">
@@ -182,10 +222,11 @@ export const Roster =
                     </div>
                 </div>
                 <div className="row">
-                    <div className="small-12 large-3 columns medium-order-2">
+                    <div className="small-12 large-3 columns large-order-2">
                         <p><strong>Treasury: </strong> {current_roster.treasury || 0}gp</p>
+                        <p><strong>Space: </strong> {current_roster.model_limit || 0}</p>
                     </div>
-                    <div className="small-12 large-9 columns medium-order-1">
+                    <div className="small-12 large-9 columns large-order-1">
                         <Miniature roster_id={current_roster_id}
                                    target="wizard"
                                    {...current_roster.wizard}
@@ -196,6 +237,7 @@ export const Roster =
                                    addItem={addItem}
                                    removeItem={removeItem}
                                    uploadFile={uploadFile}/>
+                        {apprenticeElement}
                     </div>
                 </div>
             </div>;

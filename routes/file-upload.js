@@ -37,16 +37,12 @@ router.post('/',
                     ? [0, ((TARGET_HEIGHT - (height * widthRatio)) / (widthRatio * 2)), TARGET_WIDTH / widthRatio, TARGET_HEIGHT / widthRatio]
                     : [((TARGET_WIDTH - (widthRatio * heightRatio)) / (heightRatio * 2)), 0, TARGET_WIDTH / heightRatio, TARGET_HEIGHT / heightRatio];
 
-                console.log(crop_w, crop_h, crop_x, crop_y);
-
                 gm(tmpPath)
                     .crop(crop_w, crop_h, crop_x, crop_y)
                     .resize(TARGET_WIDTH, TARGET_HEIGHT)
                     .write(filePath, (err) => {
                         if (err) return onError(err);
-                        const data = {file_url: req.baseUrl + '/' + _id + '.png'};
-                        console.log(data);
-                        return res.json(data)
+                        return res.json({file_url: req.baseUrl + '/' + _id + '.png'})
                     })
             });
         });

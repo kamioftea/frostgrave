@@ -18,6 +18,9 @@ export const actions = {
     ADD_ITEM:    'ADD_ITEM',
     REMOVE_ITEM: 'REMOVE_ITEM',
 
+    ADD_APPRENTICE:    'ADD_APPRENTICE',
+    REMOVE_APPRENTICE: 'REMOVE_APPRENTICE',
+
     UPLOAD_FILE:   'UPLOAD_FILE',
     FILE_UPLOADED: 'FILE_UPLOADED',
 };
@@ -89,6 +92,15 @@ export const removeItem = (roster_id, target, index) => ({
           roster_id,
           target,
           index
+});
+
+export const addApprentice = (roster_id) => ({
+    type: actions.ADD_APPRENTICE,
+          roster_id
+});
+export const removeApprentice = (roster_id) => ({
+    type: actions.REMOVE_APPRENTICE,
+          roster_id
 });
 
 export const uploadFile = (file, extra_data) => ({

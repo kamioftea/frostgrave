@@ -91,6 +91,18 @@ const fileUploadedEpic = action$ =>
         .ofType(actions.FILE_UPLOADED)
         .map(({error, file_url, extra_data: {roster_id, target}}) => updateRoster(roster_id, target + '.image_url', file_url));
 
+const addApprenticeEpic = action$ =>
+    action$
+        .ofType(actions.ADD_APPRENTICE)
+        .switchMap(({roster_id, target, item}) => makeJsonRequest('/api/roster/' + roster_id + '/apprentice', null, 'post'))
+        .map(({error, roster}) => rosterUpdated(error, roster));
+
+const removeApprenticeEpic = action$ =>
+    action$
+        .ofType(actions.REMOVE_APPRENTICE)
+        .switchMap(({roster_id, target, index}) => makeJsonRequest(['/api/roster', roster_id, 'apprentice'].join('/'), null, 'delete'))
+        .map(({error, roster}) => rosterUpdated(error, roster));
+
 
 const loggingEpic = action$ => {
     action$.subscribe(
@@ -108,6 +120,8 @@ const epics = combineEpics(
     removeItemEpic,
     uploadFileEpic,
     fileUploadedEpic,
+    addApprenticeEpic,
+    removeApprenticeEpic,
     loggingEpic,
 );
 
