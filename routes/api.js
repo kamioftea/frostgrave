@@ -209,15 +209,15 @@ router.delete('/roster/:id/apprentice',
 
         db$.mergeMapPersist(db => db.collection('rosters').findOne({_id}))
             .mergeMapPersist(([db, result]) => {
-                const {cost} = result.apprentice || {};
-                console.log(cost, result.apprentice);
+                const {cost, items} = result.apprentice || {};
+                const totalCost = cost + (items || []).reduce((acc, item) => acc + parseInt(item.cost), 0);
                 return cost !== undefined
                     ? db.collection('rosters').updateOne(
                     {_id, user_id: req.user._id},
                     {
                         $unset: {apprentice: 1},
                         $inc:   {
-                            treasury: parseInt(cost),
+                            treasury: parseInt(totalCost),
                             model_limit: 1
                         }
                     }
