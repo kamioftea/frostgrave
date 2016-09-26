@@ -16,16 +16,23 @@ router.get('/data',
         const events$ = db$.mergeMap(db => db.collection('events').find().sort({name: 1}).toArray());
         // rosters are sorted by the client
         const roster$ = db$.mergeMap(db => db.collection('rosters').find().toArray());
+        const users$ = db$.mergeMap(db => db.collection('users').find().sort({name: 1}).toArray());
+        const soldiers$ = db$.mergeMap(db => db.collection('miniatures').find({type: 'soldier'}).sort({cost: 1, name: 1}).toArray());
 
-        Rx.Observable.zip(spellSchools$, events$, roster$)
+        Rx.Observable.zip(spellSchools$, events$, roster$, users$, soldiers$)
             .subscribe(
-                ([spell_schools, events, rosters]) => res.json({
-                    spell_schools,
-                    events,
-                    rosters,
-                    user: req.user,
-                }),
+                ([spell_schools, events, rosters, users, soldiers]) => {
+                    console.log(soldiers);
+                    res.json({
+                        spell_schools,
+                        events,
+                        rosters,
+                        user_map: users.reduce((acc, user) => Object.assign({}, acc, {[user._id]: user.name}), {}),
+                        soldiers,
+                        user: req.user,
+                    })},
                 error => res.json({error: error.message})
+
             )
     }
 );
@@ -89,6 +96,28 @@ router.put('/roster/:id',
             {_id, user_id: req.user._id},
             {$set: update}
         ))
+            .validate(([,{result: {nModified}}]) => nModified === 1, "Failed to update roster")
+            .mergeMap(([db,]) => db.collection('rosters').findOne({_id}))
+            .subscribe(
+                roster => res.json({roster}),
+                error => res.json({error})
+            );
+    }
+);
+
+router.delete('/roster/:id',
+    (req, res) => {
+        const {id} = req.params;
+        const _id = new ObjectId(id);
+
+        db$
+            .mergeMap(db => db.collection('rosters').updateOne(
+                {_id, user_id: req.user._id},
+                {
+                    $push: {[target + '.items']: {name, cost, bonus}},
+                    $inc:  {treasury: -cost}
+                }
+            ))
             .validate(([,{result: {nModified}}]) => nModified === 1, "Failed to update roster")
             .mergeMap(([db,]) => db.collection('rosters').findOne({_id}))
             .subscribe(
@@ -165,7 +194,7 @@ router.post('/roster/:id/apprentice',
             .mergeMap(roster => {
                 const event$ = db$.mergeMap(db => db.collection('events').findOne({_id: new ObjectId(roster.event_id)}))
                     .validate(event => !!event, "Failed to load event")
-                    .validate((apprentice_allowed) => apprentice_allowed, "Event doesnt allow apprentices");
+                    .validate((apprentice_allowed) => apprentice_allowed, "Event doesn't allow apprentices");
                 const apprentice$ = db$.mergeMap(db => db.collection('miniatures').findOne({type: 'apprentice'}))
                     .validate(apprentice => !!apprentice && !!apprentice.stat_block, "Failed to load apprentice stat modifiers");
 
@@ -203,9 +232,8 @@ router.post('/roster/:id/apprentice',
 
 router.delete('/roster/:id/apprentice',
     (req, res) => {
-        const {id, target, index} = req.params;
+        const {id} = req.params;
         const _id = new ObjectId(id);
-        const key = target + '.items';
 
         db$.mergeMapPersist(db => db.collection('rosters').findOne({_id}))
             .mergeMapPersist(([db, result]) => {
@@ -226,6 +254,87 @@ router.delete('/roster/:id/apprentice',
             })
             .validate(([,,{result: {nModified}}]) => nModified === 1, "Failed to update roster")
             .mergeMap(([db]) => db.collection('rosters').findOne({_id}))
+            .subscribe(
+                roster => res.json({roster}),
+                error => res.json({error: error.message ? error.message : error})
+            );
+
+    }
+);
+
+router.post('/roster/:id/soldier/:miniature_id',
+    (req, res) => {
+        const {id, miniature_id} = req.params;
+        const _id = new ObjectId(id);
+
+        const roster$ = db$.mergeMap(db => db.collection('rosters').findOne({_id}))
+            .validate(roster => !!roster, "Failed to find roster")
+            .validate(({model_limit, treasury}) => model_limit > 0 && treasury > 0, "Not enough space/funds to add soldier");
+
+        const soldier$ = db$.mergeMap(db => db.collection('miniatures').findOne({_id: new ObjectId(miniature_id), type: 'soldier'}))
+            .validate(soldier => !!soldier$, "Failed to find soldier");
+
+        Rx.Observable.zip(db$, roster$, soldier$)
+            .mergeMap(([db,roster,soldier]) =>
+                db.collection('rosters').updateOne(
+                    {_id, user_id: req.user._id},
+                    {
+                        $push: {
+                            soldiers: {
+                                name: '',
+                                cost: soldier.cost,
+                                miniature_id: soldier._id,
+                                items: soldier.items.map(name => ({name})),
+                                notes: soldier.notes
+                            }
+                        },
+                        $inc:  {
+                            treasury: -soldier.cost,
+                            model_limit: -1,
+                        }
+                    }
+                )
+            )
+            .validate(({result: {nModified}}) => nModified === 1, "Failed to update roster")
+            .mergeMapTo(db$.mergeMap(db => db.collection('rosters').findOne({_id})))
+            .subscribe(
+                roster => res.json({roster}),
+                error => {console.log(error); res.json({error: error.message ? error.message : error})}
+            );
+
+    }
+);
+
+router.delete('/roster/:id/soldier/:index',
+    (req, res) => {
+        const {id, index} = req.params;
+        const _id = new ObjectId(id);
+
+        db$.mergeMap(db => db.collection('rosters').findOne({_id, user_id: req.user._id}))
+            .validate(roster => !!roster, "Failed to find Roster")
+            .mergeMap(roster => {
+                const {cost, items} = roster.soldiers[index] || {};
+                const totalCost = cost + (items || []).reduce((acc, item) => acc + parseInt(item.cost || 0), 0);
+                return cost !== undefined
+                    ? db$.mergeMap(
+                        db => db.collection('rosters').updateOne(
+                            {_id, user_id: req.user._id},
+                            {
+                                $unset: {['soldiers.' + index]: 1},
+                                $inc:   {
+                                    treasury: parseInt(totalCost),
+                                    model_limit: 1
+                                }
+                            }
+                        ))
+                    : Rx.Observable.throw("Failed to find apprentice to delete")
+            })
+            .validate(({result: {nModified}}) => nModified === 1, "Failed to update roster")
+            .mergeMapTo(db$.mergeMap(db => db.collection('rosters').updateOne(
+                {_id},
+                {$pull: {soldiers: null}}
+            )))
+            .mergeMapTo(db$.mergeMap(db => db.collection('rosters').findOne({_id})))
             .subscribe(
                 roster => res.json({roster}),
                 error => res.json({error: error.message ? error.message : error})

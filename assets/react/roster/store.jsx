@@ -93,6 +93,18 @@ const rostersReducer = (state = [], action) => {
     }
 };
 
+const soldiersReducer = (state = [], action) => {
+    switch (action.type) {
+        case actions.RECEIVE_DATA:
+            return action.data.soldiers
+                ? [...action.data.soldiers]
+                : state;
+
+        default:
+            return state;
+    }
+};
+
 const currentRosterReducer = (state = null, action) => {
     switch (action.type) {
         case actions.ROSTER_ADDED:
@@ -120,14 +132,28 @@ const userReducer = (state = {}, action) => {
     }
 };
 
+const userMapReducer = (state = {}, action) => {
+    switch (action.type) {
+        case actions.RECEIVE_DATA:
+            return action.data.user_map
+                ? {...action.data.user_map}
+                : state;
+
+        default:
+            return state;
+    }
+};
+
 const reducer = (state = {}, action) => ({
     mode:              modeReducer(state.mode, action),
     filters:           filtersReducer(state.filters, action),
     spell_schools:     spellSchoolReducer(state.spell_schools, action),
     events:            eventsReducer(state.events, action),
     rosters:           rostersReducer(state.rosters, action),
+    soldiers:          soldiersReducer(state.soldiers, action),
     current_roster_id: currentRosterReducer(state.current_roster_id, action),
     user:              userReducer(state.user, action),
+    user_map:          userMapReducer(state.user_map, action),
 });
 
 export const store = createStore(

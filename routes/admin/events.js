@@ -41,12 +41,15 @@ router.get('/add',
 
 router.post('/add',
     (req, res) => {
-        const {name, points_limit, model_limit, apprentice_allowed} = req.body;
+        const {name, points_limit, model_limit, native_spells, allied_spells, neutral_spells, apprentice_allowed} = req.body;
 
         db$.mergeMap(db => db.collection('events').insertOne({
             name,
             points_limit:       parseInt(points_limit),
-            model_limit:        model_limit,
+            model_limit:        parseInt(model_limit),
+            native_spells:      parseInt(native_spells),
+            allied_spells:      parseInt(allied_spells),
+            neutral_spells:     parseInt(neutral_spells),
             apprentice_allowed: !!apprentice_allowed
         })).subscribe(
             _ => res.redirect(req.baseUrl),
@@ -88,7 +91,7 @@ router.post('/edit/:id',
     (req, res) => {
         const {id} = req.params;
         const _id = ObjectId(id);
-        const {name, points_limit, model_limit, apprentice_allowed} = req.body;
+        const {name, points_limit, model_limit, native_spells, allied_spells, neutral_spells, apprentice_allowed} = req.body;
 
         db$.mergeMap(db => db.collection('events').updateOne(
             {_id},
@@ -96,7 +99,10 @@ router.post('/edit/:id',
                 $set: {
                     name:               name,
                     points_limit:       parseInt(points_limit),
-                    model_limit:        model_limit,
+                    model_limit:        parseInt(model_limit),
+                    native_spells:      parseInt(native_spells),
+                    allied_spells:      parseInt(allied_spells),
+                    neutral_spells:     parseInt(neutral_spells),
                     apprentice_allowed: !!apprentice_allowed
                 }
             }

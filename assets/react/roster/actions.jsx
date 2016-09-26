@@ -15,6 +15,9 @@ export const actions = {
     UPDATE_ROSTER:  'UPDATE_ROSTER',
     ROSTER_UPDATED: 'ROSTER_UPDATED',
 
+    REMOVE_ROSTER:  'REMOVE_ROSTER',
+    ROSTER_DELETED: 'ROSTER_REMOVED',
+
     ADD_ITEM:    'ADD_ITEM',
     REMOVE_ITEM: 'REMOVE_ITEM',
 
@@ -23,6 +26,10 @@ export const actions = {
 
     UPLOAD_FILE:   'UPLOAD_FILE',
     FILE_UPLOADED: 'FILE_UPLOADED',
+
+    ADD_SOLDIER:    'ADD_SOLDIER',
+    REMOVE_SOLDIER: 'REMOVE_SOLDIER',
+
 };
 
 export const setModeRosterList = () => ({
@@ -81,6 +88,18 @@ export const rosterUpdated = (error, roster) => ({
           roster
 });
 
+export const removeRoster = (roster_id) => ({
+    type: actions.UPDATE_ROSTER,
+          roster_id,
+          key,
+          value
+});
+export const rosterRemoved = (error, roster_id) => ({
+    type: actions.ROSTER_UPDATED,
+          error,
+          roster_id
+});
+
 export const addItem = (roster_id, target, item) => ({
     type: actions.ADD_ITEM,
           roster_id,
@@ -101,6 +120,17 @@ export const addApprentice = (roster_id) => ({
 export const removeApprentice = (roster_id) => ({
     type: actions.REMOVE_APPRENTICE,
           roster_id
+});
+
+export const addSoldier = (roster_id, miniature_id) => ({
+    type: actions.ADD_SOLDIER,
+          roster_id,
+          miniature_id
+});
+export const removeSoldier = (roster_id, index) => ({
+    type: actions.REMOVE_SOLDIER,
+          roster_id,
+          index
 });
 
 export const uploadFile = (file, extra_data) => ({

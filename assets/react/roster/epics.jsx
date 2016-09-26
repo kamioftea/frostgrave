@@ -68,6 +68,12 @@ const updateRosterEpic = action$ =>
         .switchMap(({roster_id, key, value}) => makeJsonRequest('/api/roster/' + roster_id, {[key]: value}, 'put'))
         .map(({error, roster}) => rosterUpdated(error, roster));
 
+const removeRosterEpic = action$ =>
+    action$
+        .ofType(actions.REMOVE_ROSTER)
+        .switchMap(({roster_id, key, value}) => makeJsonRequest('/api/roster/' + roster_id, null, 'delete'))
+        .map(({error, roster}) => rosterUpdated(error, roster));
+
 const addItemEpic = action$ =>
     action$
         .ofType(actions.ADD_ITEM)
@@ -100,7 +106,19 @@ const addApprenticeEpic = action$ =>
 const removeApprenticeEpic = action$ =>
     action$
         .ofType(actions.REMOVE_APPRENTICE)
-        .switchMap(({roster_id, target, index}) => makeJsonRequest(['/api/roster', roster_id, 'apprentice'].join('/'), null, 'delete'))
+        .switchMap(({roster_id}) => makeJsonRequest(['/api/roster', roster_id, 'apprentice'].join('/'), null, 'delete'))
+        .map(({error, roster}) => rosterUpdated(error, roster));
+
+const addSoldierEpic = action$ =>
+    action$
+        .ofType(actions.ADD_SOLDIER)
+        .switchMap(({roster_id, miniature_id}) => makeJsonRequest(['/api/roster', roster_id, 'soldier', miniature_id ].join('/'), null, 'post'))
+        .map(({error, roster}) => rosterUpdated(error, roster));
+
+const removeSoldierEpic = action$ =>
+    action$
+        .ofType(actions.REMOVE_SOLDIER)
+        .switchMap(({roster_id, index}) => makeJsonRequest(['/api/roster', roster_id, 'soldier', index ].join('/'), null, 'delete'))
         .map(({error, roster}) => rosterUpdated(error, roster));
 
 
@@ -116,12 +134,15 @@ const epics = combineEpics(
     requestDataEpic,
     addRosterEpic,
     updateRosterEpic,
+    removeRosterEpic,
     addItemEpic,
     removeItemEpic,
     uploadFileEpic,
     fileUploadedEpic,
     addApprenticeEpic,
     removeApprenticeEpic,
+    addSoldierEpic,
+    removeSoldierEpic,
     loggingEpic,
 );
 

@@ -24,8 +24,10 @@ router.post('/',
 
         const onError = err => {console.log(err); res.json({error: err.message})};
 
-        gm(tmpPath).size((err, {width, height}) => {
+        gm(tmpPath).size((err, size) => {
             if(err) return onError(err);
+
+            const {width, height} = size;
 
             mkdirp(path.dirname(filePath), function (err) {
                 if (err) return onError(err);

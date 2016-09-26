@@ -6,7 +6,7 @@ import {preventDefault} from '../preventDefault.jsx';
 import {objectEntries} from '../iterators.jsx';
 import {ClickToEdit} from '../click-to-edit.jsx';
 import {ImageUpload} from '../image-upload.jsx';
-import {setModeRosterList, updateRoster, addItem, removeItem, uploadFile, addApprentice, removeApprentice} from './actions.jsx';
+import {setModeRosterList, updateRoster, addItem, removeItem, uploadFile, addApprentice, removeApprentice,addSoldier, removeSoldier, removeRoster} from './actions.jsx';
 
 const modifier = (value) => parseInt(value) < 0 ? parseInt(value) : '+' + parseInt(value);
 
@@ -46,14 +46,16 @@ const ItemRow = ({item: {name, cost}, onRemove}) => (
             {name}
         </div>
         <div className="small-2 columns text-right align-middle">
-            {cost}gp
+            {cost ? cost + 'gp' : null}
         </div>
         <div className="small-2 columns text-right align-middle">
+            {cost ? (
             <a href="#"
                className="button small alert hollow"
                onClick={preventDefault(() => onRemove())}>
                 <i className="fa fa-minus"/>
-            </a>
+            </a> )
+                : null}
         </div>
     </div>
 );
@@ -138,12 +140,12 @@ const Miniature = ({
 
 export const Roster =
     connect(
-        ({current_roster_id, rosters, spell_schools, events, user: {_id: user_id}}) => ({current_roster_id, rosters, spell_schools, events, user_id}),
-        {setModeRosterList, updateRoster, addItem, removeItem, uploadFile, addApprentice, removeApprentice}
+        ({current_roster_id, rosters, spell_schools, events, soldiers, user_map, user: {_id: user_id}}) => ({current_roster_id, rosters, spell_schools, events, soldiers, user_map, user_id}),
+        {setModeRosterList, updateRoster, removeRoster, addItem, removeItem, uploadFile, addApprentice, removeApprentice, addSoldier, removeSoldier}
     )(
         ({
-            current_roster_id, rosters, spell_schools, events, user_id,
-            setModeRosterList, updateRoster, addItem, removeItem, uploadFile, addApprentice, removeApprentice
+            current_roster_id, rosters, spell_schools, events, soldiers, user_map, user_id,
+            setModeRosterList, updateRoster, removeRoster, addItem, removeItem, uploadFile, addApprentice, removeApprentice, addSoldier, removeSoldier
         }) => {
             const current_roster = rosters.filter(_ => _._id === current_roster_id)[0] || {};
             const spell_school = spell_schools.filter(_ => _._id === current_roster.wizard.spell_school_id)[0];
@@ -186,14 +188,14 @@ export const Roster =
                              {...current_roster.apprentice}
                              stat_block={applyStatModifiers(current_roster.wizard.stat_block, current_roster.apprentice.stat_modifiers)}
                              label="Apprentice"
-                             editable="editable"
+                             editable={editable}
                              availableItems={filterItems(current_roster.apprentice.items, wizard_items)}
                              updateRoster={updateRoster}
                              addItem={addItem}
                              removeItem={removeItem}
                              uploadFile={uploadFile}
                              remove={() => removeApprentice(current_roster_id)}/>
-                : (editable && event && event.apprentice_allowed
+                : (editable && event && event.apprentice_allowed && current_roster.model_limit > 0
                     ? (
                         <a href="#"
                          className="button primary hollow"
@@ -204,6 +206,42 @@ export const Roster =
                         </a> )
 
                     : null );
+            const soldierElements = (current_roster.soldiers || []).map((soldier, index) => {
+
+                const baseSoldier = soldiers.filter(_ => _._id == soldier.miniature_id)[0];
+                if(!baseSoldier)
+                {
+                    return null;
+                }
+
+                return <Miniature key={index}
+                                  roster_id={current_roster_id}
+                                  target={'soldiers.' + index}
+                                  {...soldier}
+                                  stat_block={baseSoldier.stat_block}
+                                  label={baseSoldier.name}
+                                  editable={editable}
+                                  availableItems={[]}
+                                  updateRoster={updateRoster}
+                                  addItem={addItem}
+                                  removeItem={removeItem}
+                                  uploadFile={uploadFile}
+                                  remove={() => removeSoldier(current_roster_id, index)}/>
+            });
+
+            const addSoldierElement = editable && current_roster.model_limit > 0 && current_roster.treasury > 0
+                ? (
+                    <select value={''}>
+                        <option value={''}>Select a soldier to add...</option>
+                        {soldiers.map(soldier =>
+                            <option key={soldier._id}
+                                    value={soldier._id}
+                                    onClick={preventDefault((e) => addSoldier(current_roster_id, e.currentTarget.value))}>
+                                {soldier.name} - {soldier.cost}gp
+                            </option>
+                        )}
+                    </select> )
+                : null;
 
             return <div>
                 <div className="row">
@@ -223,6 +261,7 @@ export const Roster =
                 </div>
                 <div className="row">
                     <div className="small-12 large-3 columns large-order-2">
+                        <p><strong>User: </strong> {user_map[current_roster.user_id] || '???'}</p>
                         <p><strong>Treasury: </strong> {current_roster.treasury || 0}gp</p>
                         <p><strong>Space: </strong> {current_roster.model_limit || 0}</p>
                     </div>
@@ -238,6 +277,8 @@ export const Roster =
                                    removeItem={removeItem}
                                    uploadFile={uploadFile}/>
                         {apprenticeElement}
+                        {soldierElements}
+                        {addSoldierElement}
                     </div>
                 </div>
             </div>;
