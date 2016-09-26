@@ -47,7 +47,7 @@ passport.deserializeUser(
     (id, cb) => db$
         .mergeMap(db => db.collection('users').findOne({_id: ObjectID(id)}))
         .subscribe(
-            user => cb(null, user),
+            user => cb(null, Object.assign({}, user, {password: !!user.password})),
             err => cb(err)
         )
 );

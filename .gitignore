@@ -37,3 +37,6 @@ npm-debug.log.*
 
 *.css
 *.map
+
+public/scripts
+/tmp

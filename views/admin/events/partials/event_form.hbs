@@ -2,6 +2,9 @@
     {{> form__labelled_input label='Name' name='name' value=event.name }}
     {{> form__labelled_input label='Points Limit' type='number' name='points_limit' value=event.points_limit }}
     {{> form__labelled_input label='Model Limit' type='number' name='model_limit' value=event.model_limit }}
+    {{> form__labelled_input label='Native Spells' type='number' name='native_spells' value=event.native_spells }}
+    {{> form__labelled_input label='Alligned Spells' type='number' name='allied_spells' value=event.allied_spells }}
+    {{> form__labelled_input label='Neutral Spells' type='number' name='neutral_spells' value=event.neutral_spells }}
     {{> form__labelled_checkbox label='Apprentice Allowed?' name='apprentice_allowed' value='1' checked=event.apprentice_allowed }}
     {{> form__submit_row label='Save Event' }}
 </form>

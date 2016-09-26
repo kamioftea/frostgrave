@@ -5,8 +5,7 @@ const {authenticated} = require('../authenticateRequest');
 /* GET home page. */
 router.get('/',
     authenticated(),
-    (req, res, next) => {
-        res.json(req.user);
-    });
+    (req, res) => res.render('roster', {title: 'Frostgrave Roster Management'})
+);
 
 module.exports = router;

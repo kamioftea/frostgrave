@@ -3,7 +3,7 @@ module.exports = (obs) => obs.prototype.mergeMapPersist = function (mapper, ...a
     return source.mergeMap(
         (rawData, ...args) =>
             obs
-                .from(mapper(rawData, ...args))
+                .from(mapper(rawData || null, ...args))
                 .map(result => [...(Array.isArray(rawData) ? rawData : [rawData]), result])
         ,
         ...args
