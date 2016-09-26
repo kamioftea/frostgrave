@@ -54,8 +54,8 @@ export const Sidebar =
                     const props = {
                         key: event._id,
                         label: event.name,
-                        selected: (filters.events || []).includes(event._id),
-                        onClick: () => toggleAndSetMode('events', event._id)
+                        selected: (filters.event_id || []).includes(event._id),
+                        onClick: () => toggleAndSetMode('event_id', event._id)
                     };
                     return <Filter {...props} />
                 }),
@@ -70,8 +70,8 @@ export const Sidebar =
                     const props = {
                         key: spellSchool._id,
                         label: spellSchool.name,
-                        selected: (filters.spell_schools || []).includes(spellSchool._id),
-                        onClick: () => toggleAndSetMode('spell_schools', spellSchool._id)
+                        selected: (filters['wizard.spell_school_id'] || []).includes(spellSchool._id),
+                        onClick: () => toggleAndSetMode('wizard.spell_school_id', spellSchool._id)
                     };
                     return <Filter {...props} />
                 }),
@@ -83,8 +83,8 @@ export const Sidebar =
 
             const userFilter = user
                 ? <Filter label="My Rosters"
-                        selected={(filters.users || []).includes(user._id)}
-                        onClick={() => toggleAndSetMode('users', user._id)} />
+                        selected={(filters.user_id || []).includes(user._id)}
+                        onClick={() => toggleAndSetMode('user_id', user._id)} />
                 : null;
 
             const adminLink = (user.roles || []).includes('Admin')

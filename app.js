@@ -14,6 +14,7 @@ var fs = require('fs');
 var routes = require('./routes/index');
 var admin = require('./routes/admin/index');
 var api = require('./routes/api');
+var upload = require('./routes/file-upload');
 var users = require('./routes/users');
 
 var app = express();
@@ -51,6 +52,7 @@ hbs.registerHelper('concat', (...pieces) => pieces.length > 1 ? pieces.slice(0, 
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.raw({type: 'image/png', limit: '8mb'}));
 app.use(cookieParser());
 
 //TODO: load secret from config
@@ -74,10 +76,12 @@ app.use(require('node-sass-middleware')({
 }));
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/upload', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/', routes);
 app.use('/admin', admin);
 app.use('/api', api);
+app.use('/upload', upload);
 app.use('/user', users(passport));
 
 // catch 404 and forward to error handler

@@ -21,7 +21,7 @@ export const RosterWrapper =
                         [actions.MODE_ROSTER_LIST]: <RosterList />,
                         [actions.MODE_ROSTER]:      <Roster />,
                         [actions.MODE_ADD_ROSTER]:  <AddRoster />,
-                        [actions.MODE_ACCOUNT]:     'Account'
+                        [actions.MODE_ACCOUNT]:     <h1 className="text-alert">Not Implemented Yet</h1>
                     }[mode]}
                 </div>
                 <div className="sidebar-menu medium-order-1 small-12 medium-4 large-3 columns">

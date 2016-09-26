@@ -2,6 +2,12 @@ import {createStore, applyMiddleware} from "redux";
 import {actions} from "./actions.jsx";
 import {epicMiddleware} from "./epics.jsx";
 
+const without = (obj, key) => {
+    //noinspection UnnecessaryLocalVariableJS
+    const {[key]: _, ...rest} = obj;
+    return rest;
+};
+
 const modeReducer = (state = actions.MODE_ROSTER_LIST, action) => {
     switch (action.type) {
         case actions.MODE_ROSTER_LIST:
@@ -26,7 +32,9 @@ const filtersReducer = (state = {}, action) => {
                 ? values.filter(v => v != action.value)
                 : values.concat([action.value]);
 
-            return {...state, [action.key]: newValues};
+            return newValues.length > 0
+                ? {...state, [action.key]: newValues}
+                : without(state, action.key);
 
         default:
             return state;
@@ -57,16 +65,27 @@ const eventsReducer = (state = [], action) => {
     }
 };
 
+const sortByName = arr => arr.sort((a, b) => a.name.localeCompare(b.name));
+
 const rostersReducer = (state = [], action) => {
     switch (action.type) {
         case actions.RECEIVE_DATA:
             return action.data.rosters
-                ? [...action.data.rosters]
+                ? sortByName([...action.data.rosters])
                 : state;
 
         case actions.ROSTER_ADDED:
             return action.roster
-                ? [...state, action.roster]
+                ? sortByName([...state, action.roster])
+                : state;
+
+        case actions.ROSTER_UPDATED:
+            return action.roster
+                ? sortByName(
+                [
+                    ...(state.filter(_ => _._id != action.roster._id)),
+                    action.roster
+                ])
                 : state;
 
         default:
@@ -82,7 +101,7 @@ const currentRosterReducer = (state = null, action) => {
                 : state;
 
         case actions.MODE_ROSTER:
-            return action.roster.roster_id || state;
+            return action.roster_id || state;
 
         default:
             return state
@@ -102,13 +121,13 @@ const userReducer = (state = {}, action) => {
 };
 
 const reducer = (state = {}, action) => ({
-    mode:           modeReducer(state.mode, action),
-    filters:        filtersReducer(state.filters, action),
-    spell_schools:  spellSchoolReducer(state.spell_schools, action),
-    events:         eventsReducer(state.events, action),
-    rosters:        rostersReducer(state.roster, action),
+    mode:              modeReducer(state.mode, action),
+    filters:           filtersReducer(state.filters, action),
+    spell_schools:     spellSchoolReducer(state.spell_schools, action),
+    events:            eventsReducer(state.events, action),
+    rosters:           rostersReducer(state.rosters, action),
     current_roster_id: currentRosterReducer(state.current_roster_id, action),
-    user:           userReducer(state.user, action),
+    user:              userReducer(state.user, action),
 });
 
 export const store = createStore(

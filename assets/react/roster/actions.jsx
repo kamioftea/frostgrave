@@ -11,6 +11,15 @@ export const actions = {
 
     ADD_ROSTER:   'ADD_ROSTER',
     ROSTER_ADDED: 'ROSTER_ADDED',
+
+    UPDATE_ROSTER:  'UPDATE_ROSTER',
+    ROSTER_UPDATED: 'ROSTER_UPDATED',
+
+    ADD_ITEM:    'ADD_ITEM',
+    REMOVE_ITEM: 'REMOVE_ITEM',
+
+    UPLOAD_FILE:   'UPLOAD_FILE',
+    FILE_UPLOADED: 'FILE_UPLOADED',
 };
 
 export const setModeRosterList = () => ({
@@ -56,4 +65,42 @@ export const rosterAdded = (error, roster) => ({
           error,
           roster
 });
+
+export const updateRoster = (roster_id, key, value) => ({
+    type: actions.UPDATE_ROSTER,
+          roster_id,
+          key,
+          value
+});
+export const rosterUpdated = (error, roster) => ({
+    type: actions.ROSTER_UPDATED,
+          error,
+          roster
+});
+
+export const addItem = (roster_id, target, item) => ({
+    type: actions.ADD_ITEM,
+          roster_id,
+          target,
+          item
+});
+export const removeItem = (roster_id, target, index) => ({
+    type: actions.REMOVE_ITEM,
+          roster_id,
+          target,
+          index
+});
+
+export const uploadFile = (file, extra_data) => ({
+    type: actions.UPLOAD_FILE,
+          file,
+          extra_data
+});
+export const fileUploaded = (error, file_url, extra_data) => ({
+    type: actions.FILE_UPLOADED,
+          error,
+          file_url,
+          extra_data
+});
+
 
