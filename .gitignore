@@ -37,6 +37,6 @@ npm-debug.log.*
 
 *.css
 *.map
-
-public/scripts
-/tmp
+/uploads/
+/tmp/
+/public/scripts/
