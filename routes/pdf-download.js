@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const express = require('express');
 const router = express.Router();
 const {authenticated} = require('../authenticateRequest');
@@ -31,7 +32,7 @@ const fonts = {
 
 const printer = new PdfPrinter(fonts);
 
-const getHeader = (roster, event) => [
+const buildHeader = (roster, event) => [
     {
         image:     'file://../public/images/frostgrave-banner.png',
         width:     300,
@@ -44,23 +45,108 @@ const getHeader = (roster, event) => [
     }
 ];
 
-const getInfo = (roster, event) => [
-    {
+const buildInfo = (roster, event) => [
+    leftRightColumns(
+        event.name,
+        {
+            text: [
+                {text: 'Cost:', bold: true},
+                parseInt(event.points_limit) - parseInt(roster.treasury) + 'gp'
+            ]
+        })
+];
+
+const leftRightColumns = (leftContents, rightContents) => {
+    console.log(leftContents, rightContents);
+
+    return {
         columns: [
-            {
-                text:      event.name,
-                alignment: 'left'
-            },
-            {
-                text: [
-                    {text: 'Cost:', bold: true},
-                    parseInt(event.points_limit) - parseInt(roster.treasury) + 'gp'
-                ],
-                alignment: 'right'
-            }
+            Object.assign({alignment: 'left'}, typeof leftContents === 'string' ? {text: leftContents} : leftContents),
+            Object.assign({alignment: 'right'}, typeof rightContents === 'string' ? {text: rightContents} : rightContents),
         ]
     }
-];
+};
+
+const statBlock = (stat_block, modifiers) => ({
+    table: {
+        // headers are automatically repeated if the table spans over multiple pages
+        // you can declare how many rows should be treated as headers
+        headerRows: 1,
+        widths: [ '*', '*', '*', '*', '*', '*' ],
+
+        body: [
+            [ 'M', 'F', 'S', 'A', 'W', 'H' ].map(text => ({text, bold: true, alignment: 'center'})),
+            [ stat_block.move, "+" + stat_block.fight, "+" + stat_block.shoot, stat_block.armour, "+" + stat_block.will, stat_block.health ].map(text => ({text, bold: true, alignment: 'center'})) ,
+        ],
+    }
+});
+
+const filePathFromRelativeUrl = url => {
+    const file_parts = ('..' + (url.replace(/^\/upload/, "/uploads"))).split('/');
+    const file_path = path.resolve(__dirname, ...file_parts);
+    console.log(file_path);
+    return fs.existsSync(file_path) ? file_path : null;
+};
+
+const buildWizardAndApprentice = (roster, spell_schools) => {
+    const buildSpellCaster = (name, label, stat_block, image_path, notes, items) => ({
+        columns:   [
+            ...(image_path
+                ? [
+                {
+                    image: image_path,
+                    width: 100,
+                }]
+                : []),
+            {
+                width: '*',
+                stack: [
+                    leftRightColumns(
+                        name,
+                        {text: label, style: 'header'}
+                    ),
+                    {
+                        columns:   [
+                            {
+                                width: '*',
+                                stack: [
+                                    statBlock(stat_block),
+                                    {text: 'Items:', bold: true},
+                                    ...items.map(({name}) => name)
+                                ]
+                            },
+                            {
+                                width: '33%',
+                                stack: [
+                                    {text: 'Current Health:', bold: true},
+                                    ' ',
+                                    ' ',
+                                    {text: 'Notes:', bold: true},
+                                    notes
+                                ]
+                            }
+
+                        ]
+                    }
+                ]
+            },
+
+        ],
+        columnGap: 10
+    });
+
+    const {wizard, apprentice} = roster;
+    const spell_school = spell_schools.filter(({_id}) => _id == wizard.spell_school_id)[0];
+
+    return [
+        buildSpellCaster(wizard.name, spell_school.name, wizard.stat_block, filePathFromRelativeUrl(wizard.image_url), wizard.notes, wizard.items),
+        ...( apprentice
+                ? [buildSpellCaster(apprentice.name, 'Apprentice', wizard.stat_block, filePathFromRelativeUrl(apprentice.image_url), apprentice.notes, apprentice.items)]
+                : []
+        )
+    ]
+};
+
 
 router.get('/roster/:id',
     authenticated(),
@@ -106,10 +192,12 @@ router.get('/roster/:id',
                             {
                                 columns:   [
                                     {
-                                        width: '50%',
+                                        width: '60%',
                                         stack: [
-                                            ...getHeader(roster, event),
-                                            ...getInfo(roster, event),
+                                            ...buildHeader(roster, event),
+                                            ...buildInfo(roster, event),
+                                            ' ',
+                                            ...buildWizardAndApprentice(roster, spell_schools)
                                         ]
                                     },
                                     {
@@ -123,21 +211,18 @@ router.get('/roster/:id',
                         ]
                     };
 
+                    console.log(dd);
+
                     const pdfDoc = printer.createPdfKitDocument(dd);
 
                     pdfDoc.pipe(res);
                     pdfDoc.end();
                 },
-                err => {
+                _ => {
                     res.status(500);
                     res.render(
                         'error/error',
-                        Object.assign(
-                            {status: 500},
-                            app.get('env') === 'development'
-                                ? {message: err.message, err}
-                                : {message: 'Failed to load roster', err: {}}
-                        )
+                        {status: 500,message: 'Failed to load roster', err: {}}
                     );
                 }
             );
