@@ -121,6 +121,18 @@ const removeSoldierEpic = action$ =>
         .switchMap(({roster_id, index}) => makeJsonRequest(['/api/roster', roster_id, 'soldier', index ].join('/'), null, 'delete'))
         .map(({error, roster}) => rosterUpdated(error, roster));
 
+const addSpellEpic = action$ =>
+    action$
+        .ofType(actions.ADD_SPELL)
+        .switchMap(({roster_id, spell_school_id, spell_id}) => makeJsonRequest(['/api/roster', roster_id, 'spell', spell_school_id, spell_id ].join('/'), null, 'post'))
+        .map(({error, roster}) => rosterUpdated(error, roster));
+
+const removeSpellEpic = action$ =>
+    action$
+        .ofType(actions.REMOVE_SPELL)
+        .switchMap(({roster_id, spell_id}) => makeJsonRequest(['/api/roster', roster_id, 'spell', spell_id ].join('/'), null, 'delete'))
+        .map(({error, roster}) => rosterUpdated(error, roster));
+
 
 const loggingEpic = action$ => {
     action$.subscribe(
@@ -143,6 +155,8 @@ const epics = combineEpics(
     removeApprenticeEpic,
     addSoldierEpic,
     removeSoldierEpic,
+    addSpellEpic,
+    removeSpellEpic,
     loggingEpic,
 );
 

@@ -6,7 +6,11 @@ import {preventDefault} from '../preventDefault.jsx';
 import {objectEntries} from '../iterators.jsx';
 import {ClickToEdit} from '../click-to-edit.jsx';
 import {ImageUpload} from '../image-upload.jsx';
-import {setModeRosterList, updateRoster, addItem, removeItem, uploadFile, addApprentice, removeApprentice,addSoldier, removeSoldier, removeRoster} from './actions.jsx';
+import {
+    setModeRosterList, updateRoster, addItem, removeItem, uploadFile,
+    addApprentice, removeApprentice,addSoldier, removeSoldier, removeRoster,
+    addSpell, removeSpell
+} from './actions.jsx';
 
 const modifier = (value) => parseInt(value) < 0 ? parseInt(value) : '+' + parseInt(value);
 
@@ -76,12 +80,15 @@ const Miniature = ({
 
     const itemSelect = editable && availableItems.length > 0
         ? (
-            <select value={''}>
+            <select value={''} onChange={preventDefault((event) => addItem(roster_id, target, JSON.parse(event.currentTarget.value)))}>
                 <option value=''>Add an item...</option>
                 {availableItems.map(
-                    item => <option key={item.name}
-                                    value={item.name}
-                                    onClick={preventDefault(() => addItem(roster_id, target, item))}>{item.name} - {item.cost}gp</option>)}
+                    item => (
+                        <option key={item.name}
+                                value={JSON.stringify(item)}>
+                            {item.name} - {item.cost}gp
+                        </option>
+                    ))}
             </select>)
         : null;
 
@@ -98,24 +105,24 @@ const Miniature = ({
 
     return <div className="callout miniature-container">
             <div className="row">
-                <div className="small-4 columns align-middle">
-                    <ImageUpload image_url={image_url || 'https://placehold.it/200x300'}
+                <div className="small-12 medium-4 columns align-middle">
+                    <ImageUpload image_url={image_url || 'https://placehold.it/300x400'}
                                  onDrop={file => uploadFile(file, {roster_id, target})}
                                  title={name + ' - ' + label}/>
                 </div>
-                <div className="expand columns">
+                <div className="small-12 medium-8 columns">
                     <div className="row miniature-container">
                         <div className="small-12 large-6 columns align-middle">
                             <ClickToEdit editable={editable}
                                          value={name}
                                          onSubmit={value => updateRoster(roster_id, target + '.name', value)}>
-                                <h2>
+                                <h4>
                                     <small className="text-secondary">{name}</small>
-                                </h2>
+                                </h4>
                             </ClickToEdit>
                         </div>
                         <div className="small-12 large-6 columns align-middle large-text-right">
-                            <h2>{label}</h2>
+                            <h4>{label}</h4>
                         </div>
                     </div>
                     <StatBlock {...stat_block}
@@ -138,14 +145,92 @@ const Miniature = ({
         </div>;
 };
 
+const SpellPicker = React.createClass({
+    getInitialState: () => ({
+        current_school_id: null
+    }),
+    render() {
+        console.log(this.props);
+
+        const {label, spell_schools = [], max_spells = 0, max_per_school = 0, chosen_spells = [], onAddSpell, onRemoveSpell, modifier = 0} = this.props;
+        const {current_school_id} = this.state;
+        const current_school = spell_schools.filter(({_id}) => current_school_id === null || _id == current_school_id)[0];
+        const school_chooser = spell_schools.length > 1
+            ? (
+                <div className="row">
+                    {spell_schools.map(school => {
+                        const button_class = ['button', 'expanded']
+                            .concat(school._id == current_school._id
+                                ? ['primary']
+                                : ['secondary', 'hollow']
+                            )
+                            .join(' ');
+
+                        return <div className="small-4 large-2 columns" key={school._id}>
+                            <a href="#"
+                               className={button_class}
+                               onClick={preventDefault(() => this.setState({current_school_id: school._id}))}>
+                                {school.name}
+                            </a>
+                        </div>
+                    })}
+                </div> )
+            : null;
+
+        console.log(current_school.spells);
+
+        return <div className="spell-chooser callout">
+            <div className="row align-middle">
+                <div className="small-6 columns">
+                    <h3>
+                        {label}
+                    </h3>
+                </div>
+                <div className="small-6 columns text-right">
+                    {max_per_school < max_spells ? <span className="text-secondary">{max_per_school} per school, </span> : ''}
+                    {chosen_spells.length} / {max_spells}
+                </div>
+            </div>
+            {school_chooser}
+            <div className="row">
+                {[...objectEntries(current_school.spells || {})].map(([spell_id, spell]) => {
+                    const spell_chosen = chosen_spells.map(_ => _.spell_id).includes(spell_id);
+                    const className = ['callout', 'spell', 'clickable', ...[spell_chosen ? 'primary' : 'secondary']].join(' ');
+                    console.log(spell_id, spell.name);
+                    return (
+                        <div key={spell_id}
+                             className="small-12 medium-6 large-3 columns">
+                            <div className={className}
+                                 onClick={preventDefault(() => spell_chosen ? onRemoveSpell(spell_id) : onAddSpell(current_school._id, spell_id))}>
+                            <p className="lead text-center">{spell.name}</p>
+                                <p className="text-center">{(Array.isArray(spell.types) ? spell.types : [spell.types]).join(' OR ')}</p>
+                                <p><small>{spell.description}</small></p>
+                                <div className="base-row">
+                                    <strong>{parseInt(spell.base_cost) + parseInt(modifier)}</strong>
+                                    <strong>{parseInt(spell.base_cost) + parseInt(modifier) + 2}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                })}
+            </div>
+        </div>
+    }
+});
+
 export const Roster =
     connect(
-        ({current_roster_id, rosters, spell_schools, events, soldiers, user_map, user: {_id: user_id}}) => ({current_roster_id, rosters, spell_schools, events, soldiers, user_map, user_id}),
-        {setModeRosterList, updateRoster, removeRoster, addItem, removeItem, uploadFile, addApprentice, removeApprentice, addSoldier, removeSoldier}
+        ({current_roster_id, rosters, spell_schools, events, soldiers, user_map, user: {_id: user_id}}) =>
+            ({current_roster_id, rosters, spell_schools, events, soldiers, user_map, user_id}),
+        {
+            setModeRosterList, updateRoster, removeRoster, addItem, removeItem, uploadFile, addApprentice,
+            removeApprentice, addSoldier, removeSoldier, addSpell, removeSpell
+        }
     )(
         ({
             current_roster_id, rosters, spell_schools, events, soldiers, user_map, user_id,
-            setModeRosterList, updateRoster, removeRoster, addItem, removeItem, uploadFile, addApprentice, removeApprentice, addSoldier, removeSoldier
+            setModeRosterList, updateRoster, removeRoster, addItem, removeItem, uploadFile,
+            addApprentice, removeApprentice, addSoldier, removeSoldier, addSpell, removeSpell
         }) => {
             const current_roster = rosters.filter(_ => _._id === current_roster_id)[0] || {};
             const spell_school = spell_schools.filter(_ => _._id === current_roster.wizard.spell_school_id)[0];
@@ -231,17 +316,69 @@ export const Roster =
 
             const addSoldierElement = editable && current_roster.model_limit > 0 && current_roster.treasury > 0
                 ? (
-                    <select value={''}>
-                        <option value={''}>Select a soldier to add...</option>
+                    <select value={''} onChange={preventDefault((e) => addSoldier(current_roster_id, e.currentTarget.value))}>
+                        <option value={''} >Select a soldier to add...</option>
                         {soldiers.map(soldier =>
                             <option key={soldier._id}
                                     value={soldier._id}
-                                    onClick={preventDefault((e) => addSoldier(current_roster_id, e.currentTarget.value))}>
+                                    >
                                 {soldier.name} - {soldier.cost}gp
                             </option>
                         )}
                     </select> )
                 : null;
+
+            const {allied, neutral} = spell_schools.reduce((acc, curr_school)=> {
+                if((spell_school.allied_schools || []).includes(curr_school._id)) {
+                    return {...acc, allied: [...(acc.allied || []), curr_school]}
+                }
+                if(![spell_school._id, spell_school.opposed_school].includes(curr_school._id)) {
+                    return {...acc, neutral: [...(acc.neutral || []), curr_school]}
+                }
+
+                return acc;
+            }, {});
+
+            const native_spell_chooser =
+                <SpellPicker
+                    label={spell_school.name}
+                    spell_schools={[spell_school]}
+                    max_spells={event.native_spells}
+                    max_per_school={event.native_spells}
+                    onAddSpell={(spell_school_id, spell_id) => addSpell(current_roster_id, spell_school_id, spell_id)}
+                    onRemoveSpell={spell_id => removeSpell(current_roster_id, spell_id)}
+                    chosen_spells={
+                        (current_roster.spells || [])
+                            .filter(({spell_school_id}) => {console.log(spell_school_id, spell_school, spell_school_id == spell_school._id); return spell_school_id == spell_school._id})
+                    }/>;
+
+            const allied_spell_chooser =
+                <SpellPicker
+                    label='Allied'
+                    spell_schools={allied || []}
+                    max_spells={event.allied_spells}
+                    max_per_school="1"
+                    modifier="2"
+                    onAddSpell={(spell_school_id, spell_id) => addSpell(current_roster_id, spell_school_id, spell_id)}
+                    onRemoveSpell={spell_id => removeSpell(current_roster_id, spell_id)}
+                    chosen_spells={
+                        (current_roster.spells || [])
+                            .filter(({spell_school_id}) => (allied || []).map(_ => _._id).includes(spell_school_id))
+                    }/>;
+
+            const neutral_spell_chooser =
+                <SpellPicker
+                    label='Neutral'
+                    spell_schools={neutral || []}
+                    max_spells={event.neutral_spells}
+                    max_per_school="1"
+                    modifier="4"
+                    onAddSpell={(spell_school_id, spell_id) => addSpell(current_roster_id, spell_school_id, spell_id)}
+                    onRemoveSpell={spell_id => removeSpell(current_roster_id, spell_id)}
+                    chosen_spells={
+                        (current_roster.spells || [])
+                            .filter(({spell_school_id}) => (neutral || []).map(_ => _._id).includes(spell_school_id))
+                    }/>;
 
             return <div>
                 <div className="row">
@@ -262,6 +399,7 @@ export const Roster =
                 <div className="row">
                     <div className="small-12 large-3 columns large-order-2">
                         <p><strong>User: </strong> {user_map[current_roster.user_id] || '???'}</p>
+                        <p><strong>Event: </strong> {event.name || 'N/A'}</p>
                         <p><strong>Treasury: </strong> {current_roster.treasury || 0}gp</p>
                         <p><strong>Space: </strong> {current_roster.model_limit || 0}</p>
                     </div>
@@ -279,6 +417,10 @@ export const Roster =
                         {apprenticeElement}
                         {soldierElements}
                         {addSoldierElement}
+
+                        {native_spell_chooser}
+                        {allied_spell_chooser}
+                        {neutral_spell_chooser}
                     </div>
                 </div>
             </div>;

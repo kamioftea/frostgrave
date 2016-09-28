@@ -30,6 +30,9 @@ export const actions = {
     ADD_SOLDIER:    'ADD_SOLDIER',
     REMOVE_SOLDIER: 'REMOVE_SOLDIER',
 
+    ADD_SPELL:    'ADD_SPELL',
+    REMOVE_SPELL: 'REMOVE_SPELL'
+
 };
 
 export const setModeRosterList = () => ({
@@ -131,6 +134,18 @@ export const removeSoldier = (roster_id, index) => ({
     type: actions.REMOVE_SOLDIER,
           roster_id,
           index
+});
+
+export const addSpell = (roster_id, spell_school_id, spell_id) => ({
+    type: actions.ADD_SPELL,
+          roster_id,
+          spell_school_id,
+          spell_id
+});
+export const removeSpell = (roster_id, spell_id) => ({
+    type: actions.REMOVE_SPELL,
+          roster_id,
+          spell_id
 });
 
 export const uploadFile = (file, extra_data) => ({

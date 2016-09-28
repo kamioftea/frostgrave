@@ -49,10 +49,35 @@ router.get('/edit-school/:id',
         const {id} = req.params;
         const _id = ObjectId(id);
 
-        db$.mergeMap(db => db.collection('spell_schools').findOne({_id}))
-            .validate(school => !!school, "School Not Found")
+        const spell_school$ = db$.mergeMap(db => db.collection('spell_schools').findOne({_id}))
+            .validate(school => !!school, "School Not Found");
+
+        const other_schools$ = db$.mergeMap(db => db.collection('spell_schools').find({_id: {$ne: _id}}).sort({name: 1}).toArray());
+
+        Rx.Observable.zip(spell_school$, other_schools$)
             .subscribe(
-                school => res.render('admin/spells/edit-school', {title: 'Edit Spell School - Admin - Frostgrave Roster Management', layout: 'admin/layout', school}),
+                ([school, others]) => {
+                    console.log('here subscribe');
+                    const other_schools = others.map(({_id, name}) => {
+                        const data = {
+                            _id,
+                            name,
+                            allied: (school.allied_schools || []).filter(allied_id => _id.equals(allied_id)),
+                            opposed: _id.equals(school.opposed_school)
+                        };
+                        console.log(data);
+                        return data;
+                        });
+                    res.render(
+                        'admin/spells/edit-school',
+                        {
+                            title:  'Edit Spell School - Admin - Frostgrave Roster Management',
+                            layout: 'admin/layout',
+                                    school,
+                                    other_schools,
+                        }
+                    )
+                },
                 err => err => {
                     writeMessage(req, 'Editing school failed: ' + err, 'error');
                     res.redirect(req.baseUrl)
@@ -65,12 +90,17 @@ router.post('/edit-school/:id',
         const {id} = req.params;
         const _id = ObjectId(id);
 
-        const {name} = req.body;
+        const {name, allied_schools, opposed_school} = req.body;
+        console.log(name, allied_schools, opposed_school, req.body);
 
         db$.mergeMap(db =>
             db.collection('spell_schools').updateOne(
                 {_id},
-                {$set: {name}}
+                {$set: {
+                    name,
+                    allied_schools,
+                    opposed_school
+                }}
             ))
             .validate(({result: {n}}) => n == 1, "Failed to find matching spell school")
             .validate(({result: {nModified}}) => nModified == 1, "No change detected")
@@ -161,7 +191,6 @@ router.post('/add-spell/:id',
         const _spell_id = new ObjectId();
 
         const {name, types, description, base_cost} = req.body;
-        console.log(req.body);
 
         db$.mergeMap(db =>
             db.collection('spell_schools').updateOne(
