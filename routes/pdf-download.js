@@ -41,10 +41,6 @@ const getHeader = (roster, event) => [
         style:     'header',
         text:      roster.name,
         alignment: 'center'
-    },
-    {
-        text:      event.name,
-        alignment: 'center'
     }
 ];
 
@@ -52,10 +48,15 @@ const getInfo = (roster, event) => [
     {
         columns: [
             {
+                text:      event.name,
+                alignment: 'left'
+            },
+            {
                 text: [
                     {text: 'Cost:', bold: true},
                     parseInt(event.points_limit) - parseInt(roster.treasury) + 'gp'
-                ]
+                ],
+                alignment: 'right'
             }
         ]
     }
@@ -105,7 +106,6 @@ router.get('/roster/:id',
                             {
                                 columns:   [
                                     {
-                                        // auto-sized columns have their widths based on their content
                                         width: '50%',
                                         stack: [
                                             ...getHeader(roster, event),
@@ -113,8 +113,6 @@ router.get('/roster/:id',
                                         ]
                                     },
                                     {
-                                        // star-sized columns fill the remaining space
-                                        // if there's more than one star-column, available width is divided equally
                                         width: '*',
                                         text:  'Second column'
                                     },
