@@ -37,7 +37,7 @@ router.post('/',
 
                 const [crop_x, crop_y, crop_w, crop_h] = widthRatio > heightRatio
                     ? [0, ((TARGET_HEIGHT - (height * widthRatio)) / (widthRatio * 2)), TARGET_WIDTH / widthRatio, TARGET_HEIGHT / widthRatio]
-                    : [((TARGET_WIDTH - (widthRatio * heightRatio)) / (heightRatio * 2)), 0, TARGET_WIDTH / heightRatio, TARGET_HEIGHT / heightRatio];
+                    : [((TARGET_WIDTH - (width * heightRatio)) / (heightRatio * 2)), 0, TARGET_WIDTH / heightRatio, TARGET_HEIGHT / heightRatio];
 
                 gm(tmpPath)
                     .crop(crop_w, crop_h, crop_x, crop_y)
