@@ -150,11 +150,9 @@ const SpellPicker = React.createClass({
         current_school_id: null
     }),
     render() {
-        console.log(this.props);
-
         const {label, spell_schools = [], max_spells = 0, max_per_school = 0, chosen_spells = [], onAddSpell, onRemoveSpell, modifier = 0} = this.props;
         const {current_school_id} = this.state;
-        const current_school = spell_schools.filter(({_id}) => current_school_id === null || _id == current_school_id)[0];
+        const current_school = spell_schools.filter(({_id}) => current_school_id === null || _id == current_school_id)[0] || {};
         const school_chooser = spell_schools.length > 1
             ? (
                 <div className="row">
@@ -177,8 +175,6 @@ const SpellPicker = React.createClass({
                 </div> )
             : null;
 
-        console.log(current_school.spells);
-
         return <div className="spell-chooser callout">
             <div className="row align-middle">
                 <div className="small-6 columns">
@@ -196,7 +192,6 @@ const SpellPicker = React.createClass({
                 {[...objectEntries(current_school.spells || {})].map(([spell_id, spell]) => {
                     const spell_chosen = chosen_spells.map(_ => _.spell_id).includes(spell_id);
                     const className = ['callout', 'spell', 'clickable', ...[spell_chosen ? 'primary' : 'secondary']].join(' ');
-                    console.log(spell_id, spell.name);
                     return (
                         <div key={spell_id}
                              className="small-12 medium-6 large-3 columns">
@@ -349,7 +344,7 @@ export const Roster =
                     onRemoveSpell={spell_id => removeSpell(current_roster_id, spell_id)}
                     chosen_spells={
                         (current_roster.spells || [])
-                            .filter(({spell_school_id}) => {console.log(spell_school_id, spell_school, spell_school_id == spell_school._id); return spell_school_id == spell_school._id})
+                            .filter(({spell_school_id}) => spell_school_id == spell_school._id)
                     }/>;
 
             const allied_spell_chooser =

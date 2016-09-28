@@ -23,6 +23,11 @@ body, html {
   border: none;
 }
 
+.spaced {
+  margin-bottom: $global-margin;
+  padding-bottom: $global-padding;
+}
+
 .splash-page {
   min-height: 100%;
   display: flex;

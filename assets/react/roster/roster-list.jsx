@@ -8,11 +8,11 @@ import {setModeRoster, setModeAddRoster} from './actions.jsx';
 
 export const RosterList =
     connect(
-        ({filters, rosters = []}) => ({filters, rosters}),
+        ({filters, rosters = [], user_map}) => ({filters, rosters, user_map}),
         {setModeRoster, setModeAddRoster}
     )(
         ({
-            filters, rosters,
+            filters, rosters, user_map,
             setModeRoster, setModeAddRoster
         }) => {
             function applyFilter(key = null, values = [], roster = {}) {
@@ -33,29 +33,41 @@ export const RosterList =
 
             const filteredRosterList = rosters.filter(roster => forAll((key, values) => applyFilter(key, values, roster))(filters));
 
-            return <div className="row">
-                <div className="small-12 columns">
-                    <div className="pull-right">
-                        <a href="#"
-                           className="button primary hollow"
-                           onClick={preventDefault(setModeAddRoster)}>
-                            <i className="fa fa-plus" />
-                            {' '}
-                            New Roster
-                        </a>
+            return (
+                <div>
+                    <div className="row">
+                        <div className="small-9 columns">
+                            <h1>Roster List</h1>
+                        </div>
+                        <div className="small-3 columns text-right">
+                            <a href="#"
+                               className="button primary hollow"
+                               onClick={preventDefault(setModeAddRoster)}>
+                                <i className="fa fa-plus" />
+                                {' '}
+                                New Roster
+                            </a>
+                        </div>
                     </div>
-                    <ul>
-                        {filteredRosterList.map(roster => (
-                            <li key={roster._id}>
-                                <a href="#"
-                                   className="button secondary hollow"
-                                   onClick={preventDefault(() => setModeRoster(roster._id))}>
-                                    {roster.name}
-                                </a>
-                            </li>
-                        ))}
-                    </ul>
+                    <div className="align-middle wrapper-container">
+                        <div className="row">
+                            {filteredRosterList.map(roster => (
+                                <div key={roster._id}
+                                     className="small-12 medium-4 large-3 columns spaced">
+                                    <a href="#"
+                                       className="wrapper-container"
+                                       onClick={preventDefault(() => setModeRoster(roster._id))}>
+                                        <div className="callout text-center wrapper-container">
+                                            <img src={roster.wizard.image_url || 'https://placehold.it/300x400?text=' + roster.wizard.name}/>
+                                            <h3>{roster.name}</h3>
+                                            <h4><small>{user_map[roster.user_id] || '???'}</small></h4>
+                                        </div>
+                                    </a>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
-            </div>
+            )
         }
     );
