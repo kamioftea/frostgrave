@@ -22,7 +22,6 @@ router.get('/data',
         Rx.Observable.zip(spellSchools$, events$, roster$, users$, soldiers$)
             .subscribe(
                 ([spell_schools, events, rosters, users, soldiers]) => {
-                    console.log(soldiers);
                     res.json({
                         spell_schools,
                         events,
@@ -48,7 +47,6 @@ router.post('/roster',
 
         const spellSchool$ = db$.mergeMap(db => db.collection('spell_schools').findOne({_id: new ObjectId(spell_school_id)}))
             .validate(spell_school => {
-                console.log(spell_school);
                 return !!spell_school
             }, "Failed to load spell school");
 
@@ -90,7 +88,6 @@ router.put('/roster/:id',
         const {id} = req.params;
         const _id = new ObjectId(id);
         const update = req.body;
-        console.log(update);
 
         db$.mergeMapPersist(db => db.collection('rosters').updateOne(
             {_id, user_id: req.user._id},
@@ -272,7 +269,7 @@ router.post('/roster/:id/soldier/:miniature_id',
             .validate(({model_limit, treasury}) => model_limit > 0 && treasury > 0, "Not enough space/funds to add soldier");
 
         const soldier$ = db$.mergeMap(db => db.collection('miniatures').findOne({_id: new ObjectId(miniature_id), type: 'soldier'}))
-            .validate(soldier => !!soldier$, "Failed to find soldier");
+            .validate(soldier => !!soldier, "Failed to find soldier");
 
         Rx.Observable.zip(db$, roster$, soldier$)
             .mergeMap(([db,roster,soldier]) =>
@@ -340,6 +337,116 @@ router.delete('/roster/:id/soldier/:index',
                 error => res.json({error: error.message ? error.message : error})
             );
 
+    }
+);
+
+router.post('/roster/:id/spell/:spell_school_id/:spell_id',
+    (req, res) => {
+        const {id, spell_school_id, spell_id} = req.params;
+        const _id = new ObjectId(id);
+
+        const roster$ =
+            db$.mergeMap(db => db.collection('rosters').findOne({_id}))
+                .validate(roster => !!roster, "Failed to find roster");
+
+        const event$ = roster$
+            .mergeMap(roster => db$.mergeMap(db => db.collection('events').findOne({_id: ObjectId(roster.event_id)})))
+            .validate((event) => !!event,  "Failed to look up event");
+
+        const wizard_spell_school$ = roster$
+            .mergeMap(roster => db$.mergeMap(db => db.collection('spell_schools').findOne({_id: ObjectId(roster.wizard.spell_school_id)})))
+            .validate((event) => !!event,  "Failed to look up wizard spell_school");
+
+        const new_spell_school$ =
+            db$.mergeMap(db => db.collection('spell_schools').findOne({_id: ObjectId(spell_school_id)}))
+                .validate(spell_school => spell_school && spell_school.spells && spell_school.spells[spell_id] , "Failed to find new spell");
+
+        Rx.Observable.zip(db$, roster$, event$, wizard_spell_school$, new_spell_school$)
+            .mergeMap(([db,roster, event, wizard_spell_school, new_spell_school]) => {
+                switch (true) {
+                    case wizard_spell_school._id.equals(new_spell_school._id):
+                        const existing_native = roster.spells.filter(_ => wizard_spell_school._id.equals(_.spell_school_id)).length;
+                        if(existing_native >= event.native_spells)
+                        {
+                            return Rx.Observable.throw("All ready has maximum allowed spells from that school");
+                        }
+                        break;
+
+                    case wizard_spell_school.opposed_school == spell_school_id:
+                        return Rx.Observable.throw("Spell is from opposed school");
+
+                    case roster.spells.filter(_ => _.spell_school_id == spell_school_id).length > 0:
+                        return Rx.Observable.throw("All ready has maximum allowed spells from that school");
+
+                    case wizard_spell_school.allied_schools.includes(spell_school_id):
+                        const existing_allied = roster.spells.filter(_ => wizard_spell_school.allied_schools.includes(_.spell_school_id)).length;
+                        if(existing_allied >= event.allied_spells)
+                        {
+                            return Rx.Observable.throw("All ready has maximum allowed allied spells.");
+                        }
+                        break;
+                    default:
+                        const existing_neutral = roster.spells
+                            .filter(_ => !wizard_spell_school.allied_schools.includes(_.spell_school_id))
+                            .filter(_ => ![roster.wizard.spell_school_id, wizard_spell_school.opposed_school].includes(_.spell_school_id))
+                            .length;
+                        if(existing_neutral >= event.neutral_spells)
+                        {
+                            return Rx.Observable.throw("All ready has maximum allowed neutral spells.");
+                        }
+                }
+
+                const newSpells =
+                    (roster.spells || [])
+                        .filter(_ => _.spell_id != spell_id)
+                        .concat([{
+                            spell_id: spell_id,
+                            spell_school_id: spell_school_id
+                        }]);
+                return db.collection('rosters').updateOne(
+                    {_id, user_id: req.user._id},
+                    {
+                        $set: {
+                            spells: newSpells,
+                        },
+                    }
+                )
+            })
+            .validate(({result: {nModified}}) => nModified === 1, "Failed to update roster")
+            .mergeMapTo(db$.mergeMap(db => db.collection('rosters').findOne({_id})))
+            .subscribe(
+                roster => res.json({roster}),
+                error => {console.log(error); res.json({error: error.message ? error.message : error})}
+            );
+
+    }
+);
+
+router.delete('/roster/:id/spell/:spell_id',
+    (req, res) => {
+        const {id, spell_id} = req.params;
+        const _id = new ObjectId(id);
+
+        db$.mergeMap(db => db.collection('rosters').findOne({_id, user_id: req.user._id}))
+            .validate(roster => !!roster, "Failed to find Roster")
+            .mergeMap(roster => {
+                const newSpells = (roster.spells || []).filter(_ => _.spell_id != spell_id);
+
+                return db$.mergeMap(
+                    db => db.collection('rosters').updateOne(
+                        {_id, user_id: req.user._id},
+                        {
+                            $set: {spells: newSpells}
+                        }
+                    )
+                );
+            })
+            .validate(({result: {nModified}}) => nModified === 1, "Failed to update roster")
+            .mergeMapTo(db$.mergeMap(db => db.collection('rosters').findOne({_id})))
+            .subscribe(
+                roster => res.json({roster}),
+                error => res.json({error: error.message ? error.message : error})
+            );
     }
 );
 

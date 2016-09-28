@@ -14,6 +14,26 @@
                     Name:
                     <input type="text" name="name" value="{{ school.name }}"/>
                 </label>
+                <p>Allied Schools</p>
+                <div class="row">
+                    {{#each other_schools}}
+                        <div class="columns">
+                            <label>
+                                <input type="checkbox" name="allied_schools[]" value="{{ _id }}" {{#if allied}}checked="checked"{{/if}}/>
+                                {{ name }}
+                            </label>
+                        </div>
+                    {{/each}}
+                </div>
+                <label>
+                    Opposed School:
+                    <select name="opposed_school">
+                        <option value="">Choose a school...</option>
+                        {{#each other_schools}}
+                            <option value="{{ _id }}" {{#if opposed }}selected="selected"{{/if}}>{{ name }}</option>
+                        {{/each}}
+                    </select>
+                </label>
                 <div class="text-right">
                     <button type="submit" class="button primary">
                         <i class="fa fa-pencil"></i> Edit School

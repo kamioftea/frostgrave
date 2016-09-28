@@ -16,7 +16,7 @@
         <div class="row small-up-1 medium-up-2 large-up-4">
             {{#each spells }}
                 <div class="columns">
-                    <div class="callout secondary">
+                    <div class="callout secondary spell">
                         <h2 class="text-center">{{ name }}</h2>
                         <p class="text-center">
                             {{#each types}}
@@ -27,17 +27,15 @@
                             {{/each}}
                         </p>
                         <p><small>{{ description }}</small></p>
-                        <div class="pull-left">
+                        <div class="base-row">
                             <a href="/admin/spells/edit-spell/{{ ../_id }}/{{ @key }}" class="button hollow primary">
                                 <i class="fa fa-pencil"></i>
                             </a>
-                        </div>
-                        <div class="pull-right">
+                            <h2 class="text-center">{{ base_cost }}</h2>
                             <a href="/admin/spells/delete-spell/{{ ../_id }}/{{ @key }}" class="button hollow alert">
                                 <i class="fa fa-trash"></i>
                             </a>
                         </div>
-                        <h2 class="text-center">{{ base_cost }}</h2>
                     </div>
                 </div>
             {{/each}}
