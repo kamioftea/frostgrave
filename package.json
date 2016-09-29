@@ -28,6 +28,7 @@
     "glob": "^7.1.0",
     "gm": "^1.23.0",
     "gulp": "^3.9.1",
+    "gulp-google-webfonts": "0.0.14",
     "gulp-rename": "^1.2.2",
     "gulp-sourcemaps": "^1.6.0",
     "gulp-uglify": "^2.0.0",

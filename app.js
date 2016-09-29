@@ -15,6 +15,7 @@ var routes = require('./routes/index');
 var admin = require('./routes/admin/index');
 var api = require('./routes/api');
 var upload = require('./routes/file-upload');
+var pdfDownload = require('./routes/pdf-download');
 var users = require('./routes/users');
 
 var app = express();
@@ -81,6 +82,7 @@ app.use('/upload', express.static(path.join(__dirname, 'uploads')));
 app.use('/', routes);
 app.use('/admin', admin);
 app.use('/api', api);
+app.use('/pdf', pdfDownload);
 app.use('/upload', upload);
 app.use('/user', users(passport));
 

@@ -397,6 +397,13 @@ export const Roster =
                         <p><strong>Event: </strong> {event.name || 'N/A'}</p>
                         <p><strong>Treasury: </strong> {current_roster.treasury || 0}gp</p>
                         <p><strong>Space: </strong> {current_roster.model_limit || 0}</p>
+                        <p>
+                            <a href={'/pdf/roster/' + current_roster_id} className="button alert expanded hollow" >
+                                <i className="fa fa-file-pdf-o" />
+                                {' '}
+                                Download PDF
+                            </a>
+                        </p>
                     </div>
                     <div className="small-12 large-9 columns large-order-1">
                         <Miniature roster_id={current_roster_id}

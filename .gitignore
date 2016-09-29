@@ -40,3 +40,4 @@ npm-debug.log.*
 /uploads/
 /tmp/
 /public/scripts/
+/public/fonts/

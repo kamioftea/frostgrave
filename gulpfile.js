@@ -7,6 +7,7 @@ const rename = require('gulp-rename');
 const source_maps = require('gulp-sourcemaps');
 const uglify = require('gulp-uglify');
 const webpack = require('webpack-stream');
+const googleWebFonts = require('gulp-google-webfonts');
 
 const paths = require('./paths.js');
 
@@ -21,10 +22,8 @@ gulp.task('clean', function () {
     return del(
         [
             paths.scripts_destination,
-        ],
-        // Destination is outside node route so we override the
-        // current working directory limit
-        {force: true}
+            paths.fonts_destination
+        ]
     );
 });
 
@@ -35,7 +34,7 @@ gulp.task('react', function () {
         return gulp.src(root_file)
             .pipe(source_maps.init())
             .pipe(webpack( require('./webpack.config.js')))
-            //.pipe(uglify())
+            .pipe(uglify())
             .pipe(rename(folder + '.min.js'))
             .pipe(source_maps.write('.'))
             .pipe(gulp.dest(paths.scripts_destination));
@@ -44,7 +43,22 @@ gulp.task('react', function () {
     return merge(modules)
 });
 
-gulp.task('build', ['react']);
+gulp.task('fonts', function () {
+    const nodeFonts = gulp.src(paths.fonts)
+        .pipe(gulp.dest(paths.fonts_destination));
+
+    const webFontsWoff = gulp.src(paths.fonts_list)
+        .pipe(googleWebFonts())
+        .pipe(gulp.dest(paths.fonts_destination));
+
+    const webFontsTtf = gulp.src(paths.fonts_list)
+        .pipe(googleWebFonts({format: 'ttf'}))
+        .pipe(gulp.dest(paths.fonts_destination));
+
+    return merge(nodeFonts, webFontsWoff, webFontsTtf)
+});
+
+gulp.task('build', ['react', 'fonts']);
 
 gulp.task('watch', ['build'], function () {
    gulp.watch(path.join(paths.scripts_react_root, '/**/*.jsx'), ['react']);

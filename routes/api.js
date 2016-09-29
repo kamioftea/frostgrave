@@ -69,7 +69,7 @@ router.post('/roster',
                     spells:      [],
                     soldiers:    [],
                     treasury:    event.points_limit,
-                    model_limit: parseInt(event.model_limit),
+                    model_limit: parseInt(event.model_limit) - 1,
                     event_id,
                     user_id
                 })
