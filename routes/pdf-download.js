@@ -194,17 +194,21 @@ const buildSoldier = (soldier, miniatures, picture_on_left = true) => {
 };
 
 const buildSpells = function (roster, spell_schools) {
+	if(roster.spells.length === 0) return '';
     const rowCount = Math.ceil(roster.spells.length / 5);
     const columnCount = Math.ceil(roster.spells.length / rowCount);
 
     const spellBlocks = roster.spells.map(({spell_id, spell_school_id}) => {
             const spell_school = spell_schools.filter(_ => _._id.equals(spell_school_id))[0];
+            const wizard_spell_school = spell_schools.filter(_ => _._id.equals(roster.wizard.spell_school_id))[0];
             const spell = spell_school.spells[spell_id];
 
             const modifier = spell_school_id == roster.wizard.spell_school_id ? 0
-                : ((roster.wizard.allied_schools || []).includes(spell_school_id) ? 2
-                : (roster.wizard.opposed_school != spell_school_id ? 4
+                : ((wizard_spell_school.allied_schools || []).includes(spell_school_id) ? 2
+                : (wizard_spell_school.opposed_school != spell_school_id ? 4
                 : 6));
+				
+				console.log(spell.name, spell_school_id, wizard_spell_school.spell_school_id, wizard_spell_school.allied_schools , wizard_spell_school.opposed_school, modifier)
 
             return {
                 name:        spell.name,
@@ -292,7 +296,7 @@ router.get('/roster/:id',
                 ([roster, event, spell_schools, miniatures]) => {
                     res.setHeader("Content-Type", "application/pdfDownload");
                     res.setHeader("Content-Disposition", "attachment; filename=\"" + roster.name + ".pdf\"");
-                    const isSmallList = !roster.apprentice && roster.soldiers.length < 5 && roster.spells.length < 6;
+                    const isSmallList = !roster.apprentice && roster.soldiers.length < 6 && roster.spells.length < 6;
 
                     const dd = {
                         pageSize: 'A4',
@@ -361,8 +365,7 @@ router.get('/roster/:id',
                                 columnGap: 20,
                                 pageBreak: isSmallList ? undefined : 'after'
                             },
-                            {text: 'Spells', style: 'header', alignment: 'center'},
-                            ' ',
+                            ...[isSmallList ? [''] : [{text: 'Spells', style:'header', alignment: 'center'}, ' ']],
                             buildSpells(roster, spell_schools)
                         ]
                     };

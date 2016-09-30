@@ -53,7 +53,7 @@ const ItemRow = ({item: {name, cost}, onRemove}) => (
             {cost ? cost + 'gp' : null}
         </div>
         <div className="small-2 columns text-right align-middle">
-            {cost ? (
+            {cost || cost === 0 ? (
             <a href="#"
                className="button small alert hollow"
                onClick={preventDefault(() => onRemove())}>
