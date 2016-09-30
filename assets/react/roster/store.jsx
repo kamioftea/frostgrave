@@ -8,7 +8,7 @@ const without = (obj, key) => {
     return rest;
 };
 
-const modeReducer = (state = actions.MODE_ROSTER_LIST, action) => {
+const modeReducer = (state = actions.MODE_ROSTER_LIST, action, prev_roster_id = null) => {
     switch (action.type) {
         case actions.MODE_ROSTER_LIST:
         case actions.MODE_ROSTER:
@@ -18,6 +18,11 @@ const modeReducer = (state = actions.MODE_ROSTER_LIST, action) => {
 
         case actions.ROSTER_ADDED:
             return action.roster ? actions.MODE_ROSTER : state;
+
+        case actions.ROSTER_REMOVED:
+            return state === actions.MODE_ROSTER && prev_roster_id == action.roster_id
+                ? actions.MODE_ROSTER_LIST
+                : state;
 
         default:
             return state
@@ -88,6 +93,9 @@ const rostersReducer = (state = [], action) => {
                 ])
                 : state;
 
+        case actions.ROSTER_REMOVED:
+            return state.filter(_ => _._id != action.roster_id);
+
         default:
             return state;
     }
@@ -114,6 +122,9 @@ const currentRosterReducer = (state = null, action) => {
 
         case actions.MODE_ROSTER:
             return action.roster_id || state;
+
+        case actions.ROSTER_REMOVED:
+            return action.roster_id == state ? null : state;
 
         default:
             return state
@@ -145,7 +156,7 @@ const userMapReducer = (state = {}, action) => {
 };
 
 const reducer = (state = {}, action) => ({
-    mode:              modeReducer(state.mode, action),
+    mode:              modeReducer(state.mode, action, state.current_roster_id),
     filters:           filtersReducer(state.filters, action),
     spell_schools:     spellSchoolReducer(state.spell_schools, action),
     events:            eventsReducer(state.events, action),

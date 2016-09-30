@@ -404,6 +404,16 @@ export const Roster =
                                 Download PDF
                             </a>
                         </p>
+                        <p>
+                            <a href={'#'}
+                               className="button alert expanded hollow"
+                               onClick={preventDefault(() => confirm('Delete Roster?') ? removeRoster(current_roster_id) : false)}
+                            >
+                                <i className="fa fa-trash-o" />
+                                {' '}
+                                Delete
+                            </a>
+                        </p>
                     </div>
                     <div className="small-12 large-9 columns large-order-1">
                         <Miniature roster_id={current_roster_id}

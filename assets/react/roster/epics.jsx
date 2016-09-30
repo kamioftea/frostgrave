@@ -4,7 +4,7 @@ import "rxjs/add/operator/switchMap";
 import "rxjs/add/operator/map";
 import "rxjs/add/observable/fromPromise";
 import "rxjs/add/observable/empty";
-import {actions, receiveData, rosterAdded, updateRoster, rosterUpdated, fileUploaded} from "./actions.jsx";
+import {actions, receiveData, rosterAdded, updateRoster, rosterUpdated, rosterRemoved, fileUploaded} from "./actions.jsx";
 
 const makeJsonRequest = (url, body, method = 'GET') => {
     const headers = new Headers();
@@ -72,7 +72,7 @@ const removeRosterEpic = action$ =>
     action$
         .ofType(actions.REMOVE_ROSTER)
         .switchMap(({roster_id, key, value}) => makeJsonRequest('/api/roster/' + roster_id, null, 'delete'))
-        .map(({error, roster}) => rosterUpdated(error, roster));
+        .map(({error, roster_id}) => rosterRemoved(error, roster_id));
 
 const addItemEpic = action$ =>
     action$
@@ -143,6 +143,7 @@ const loggingEpic = action$ => {
 };
 
 const epics = combineEpics(
+    loggingEpic,
     requestDataEpic,
     addRosterEpic,
     updateRosterEpic,
@@ -156,8 +157,7 @@ const epics = combineEpics(
     addSoldierEpic,
     removeSoldierEpic,
     addSpellEpic,
-    removeSpellEpic,
-    loggingEpic,
+    removeSpellEpic
 );
 
 export const epicMiddleware = createEpicMiddleware(epics);
