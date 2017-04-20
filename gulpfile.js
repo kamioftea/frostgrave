@@ -5,7 +5,7 @@ const merge = require('merge-stream');
 const path = require('path');
 const rename = require('gulp-rename');
 const source_maps = require('gulp-sourcemaps');
-const uglify = require('gulp-uglify');
+//const uglify = require('gulp-uglify');
 const webpack = require('webpack-stream');
 const googleWebFonts = require('gulp-google-webfonts');
 
@@ -34,7 +34,7 @@ gulp.task('react', function () {
         return gulp.src(root_file)
             .pipe(source_maps.init())
             .pipe(webpack( require('./webpack.config.js')))
-            .pipe(uglify())
+            //.pipe(uglify())
             .pipe(rename(folder + '.min.js'))
             .pipe(source_maps.write('.'))
             .pipe(gulp.dest(paths.scripts_destination));

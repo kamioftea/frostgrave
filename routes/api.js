@@ -28,10 +28,10 @@ router.get('/data',
                         rosters,
                         user_map: users.reduce((acc, user) => Object.assign({}, acc, {[user._id]: user.name}), {}),
                         soldiers,
-                        user: req.user,
-                    })},
+                        user:     req.user,
+                    })
+                },
                 error => res.json({error: error.message})
-
             )
     }
 );
@@ -89,10 +89,11 @@ router.put('/roster/:id',
         const _id = new ObjectId(id);
         const update = req.body;
 
-        db$.mergeMapPersist(db => db.collection('rosters').updateOne(
-            {_id, user_id: req.user._id},
-            {$set: update}
-        ))
+        db$.mergeMapPersist(
+            db => db.collection('rosters').updateOne(
+                {_id, user_id: req.user._id},
+                {$set: update}
+            ))
             .validate(([,{result: {nModified}}]) => nModified === 1, "Failed to update roster")
             .mergeMap(([db,]) => db.collection('rosters').findOne({_id}))
             .subscribe(
@@ -107,19 +108,18 @@ router.delete('/roster/:id',
         const {id} = req.params;
         const _id = new ObjectId(id);
 
-        db$
-            .mergeMap(db => db.collection('rosters').updateOne(
-                {_id, user_id: req.user._id},
-                {
-                    $push: {[target + '.items']: {name, cost, bonus}},
-                    $inc:  {treasury: -cost}
-                }
-            ))
-            .validate(([,{result: {nModified}}]) => nModified === 1, "Failed to update roster")
-            .mergeMap(([db,]) => db.collection('rosters').findOne({_id}))
+        return db$.mergeMap(db => db.collection('rosters').findOne({_id}))
+            .validate(roster => !!roster, "Failed to find roster")
+            .mergeMap(roster => db$.mergeMap(db => db.collection('deleted_rosters').insertOne(Object.assign({}, roster, {_id: undefined}))))
+            .validate(({result}) => result.ok === 1 && result.n === 1, "Failed to backup roster")
+            .mergeMapTo(db$.mergeMap(db => db.collection('rosters').removeOne({_id})))
+            .validate(({result}) => result.ok === 1 && result.n === 1, "Failed to delete roster")
             .subscribe(
-                roster => res.json({roster}),
-                error => res.json({error})
+                _ => res.json({roster_id: id}),
+                error => {
+                    console.error(error);
+                    res.json({error: error.message || error})
+                }
             );
     }
 );
@@ -170,7 +170,7 @@ router.delete('/roster/:id/item/:target/:index',
             .validate(([,,{result: {nModified}}]) => nModified === 1, "Failed to update roster")
             .mergeMapPersist(([db,]) => db.collection('rosters').updateOne(
                 {_id, user_id: req.user._id},
-                { $pull: {[key]: null} }
+                {$pull: {[key]: null}}
             ))
             .mergeMap(([db,]) => db.collection('rosters').findOne({_id}))
             .subscribe(
@@ -203,15 +203,15 @@ router.post('/roster/:id/apprentice',
                     {
                         $set: {
                             apprentice: {
-                                name: '',
-                                cost,
+                                name:           '',
+                                                cost,
                                 stat_modifiers: stat_block,
-                                items: [],
-                                notes: ''
+                                items:          [],
+                                notes:          ''
                             }
                         },
-                        $inc:  {
-                            treasury: -cost,
+                        $inc: {
+                            treasury:    -cost,
                             model_limit: -1,
                         }
                     }
@@ -221,7 +221,10 @@ router.post('/roster/:id/apprentice',
             .mergeMapTo(db$.mergeMap(db => db.collection('rosters').findOne({_id})))
             .subscribe(
                 roster => res.json({roster}),
-                error => {console.log(error); res.json({error: error.message ? error.message : error})}
+                error => {
+                    console.log(error);
+                    res.json({error: error.message ? error.message : error})
+                }
             );
 
     }
@@ -242,7 +245,7 @@ router.delete('/roster/:id/apprentice',
                     {
                         $unset: {apprentice: 1},
                         $inc:   {
-                            treasury: parseInt(totalCost),
+                            treasury:    parseInt(totalCost),
                             model_limit: 1
                         }
                     }
@@ -278,15 +281,15 @@ router.post('/roster/:id/soldier/:miniature_id',
                     {
                         $push: {
                             soldiers: {
-                                name: '',
-                                cost: soldier.cost,
+                                name:         '',
+                                cost:         soldier.cost,
                                 miniature_id: soldier._id,
-                                items: soldier.items.map(name => ({name})),
-                                notes: soldier.notes
+                                items:        soldier.items.map(name => ({name})),
+                                notes:        soldier.notes
                             }
                         },
                         $inc:  {
-                            treasury: -soldier.cost,
+                            treasury:    -soldier.cost,
                             model_limit: -1,
                         }
                     }
@@ -296,7 +299,10 @@ router.post('/roster/:id/soldier/:miniature_id',
             .mergeMapTo(db$.mergeMap(db => db.collection('rosters').findOne({_id})))
             .subscribe(
                 roster => res.json({roster}),
-                error => {console.log(error); res.json({error: error.message ? error.message : error})}
+                error => {
+                    console.log(error);
+                    res.json({error: error.message ? error.message : error})
+                }
             );
 
     }
@@ -314,16 +320,16 @@ router.delete('/roster/:id/soldier/:index',
                 const totalCost = cost + (items || []).reduce((acc, item) => acc + parseInt(item.cost || 0), 0);
                 return cost !== undefined
                     ? db$.mergeMap(
-                        db => db.collection('rosters').updateOne(
-                            {_id, user_id: req.user._id},
-                            {
-                                $unset: {['soldiers.' + index]: 1},
-                                $inc:   {
-                                    treasury: parseInt(totalCost),
-                                    model_limit: 1
-                                }
+                    db => db.collection('rosters').updateOne(
+                        {_id, user_id: req.user._id},
+                        {
+                            $unset: {['soldiers.' + index]: 1},
+                            $inc:   {
+                                treasury:    parseInt(totalCost),
+                                model_limit: 1
                             }
-                        ))
+                        }
+                    ))
                     : Rx.Observable.throw("Failed to find apprentice to delete")
             })
             .validate(({result: {nModified}}) => nModified === 1, "Failed to update roster")
@@ -351,23 +357,22 @@ router.post('/roster/:id/spell/:spell_school_id/:spell_id',
 
         const event$ = roster$
             .mergeMap(roster => db$.mergeMap(db => db.collection('events').findOne({_id: ObjectId(roster.event_id)})))
-            .validate((event) => !!event,  "Failed to look up event");
+            .validate((event) => !!event, "Failed to look up event");
 
         const wizard_spell_school$ = roster$
             .mergeMap(roster => db$.mergeMap(db => db.collection('spell_schools').findOne({_id: ObjectId(roster.wizard.spell_school_id)})))
-            .validate((event) => !!event,  "Failed to look up wizard spell_school");
+            .validate((event) => !!event, "Failed to look up wizard spell_school");
 
         const new_spell_school$ =
             db$.mergeMap(db => db.collection('spell_schools').findOne({_id: ObjectId(spell_school_id)}))
-                .validate(spell_school => spell_school && spell_school.spells && spell_school.spells[spell_id] , "Failed to find new spell");
+                .validate(spell_school => spell_school && spell_school.spells && spell_school.spells[spell_id], "Failed to find new spell");
 
         Rx.Observable.zip(db$, roster$, event$, wizard_spell_school$, new_spell_school$)
             .mergeMap(([db,roster, event, wizard_spell_school, new_spell_school]) => {
                 switch (true) {
                     case wizard_spell_school._id.equals(new_spell_school._id):
                         const existing_native = roster.spells.filter(_ => wizard_spell_school._id.equals(_.spell_school_id)).length;
-                        if(existing_native >= event.native_spells)
-                        {
+                        if (existing_native >= event.native_spells) {
                             return Rx.Observable.throw("All ready has maximum allowed spells from that school");
                         }
                         break;
@@ -380,8 +385,7 @@ router.post('/roster/:id/spell/:spell_school_id/:spell_id',
 
                     case wizard_spell_school.allied_schools.includes(spell_school_id):
                         const existing_allied = roster.spells.filter(_ => wizard_spell_school.allied_schools.includes(_.spell_school_id)).length;
-                        if(existing_allied >= event.allied_spells)
-                        {
+                        if (existing_allied >= event.allied_spells) {
                             return Rx.Observable.throw("All ready has maximum allowed allied spells.");
                         }
                         break;
@@ -390,8 +394,7 @@ router.post('/roster/:id/spell/:spell_school_id/:spell_id',
                             .filter(_ => !wizard_spell_school.allied_schools.includes(_.spell_school_id))
                             .filter(_ => ![roster.wizard.spell_school_id, wizard_spell_school.opposed_school].includes(_.spell_school_id))
                             .length;
-                        if(existing_neutral >= event.neutral_spells)
-                        {
+                        if (existing_neutral >= event.neutral_spells) {
                             return Rx.Observable.throw("All ready has maximum allowed neutral spells.");
                         }
                 }
@@ -400,7 +403,7 @@ router.post('/roster/:id/spell/:spell_school_id/:spell_id',
                     (roster.spells || [])
                         .filter(_ => _.spell_id != spell_id)
                         .concat([{
-                            spell_id: spell_id,
+                            spell_id:        spell_id,
                             spell_school_id: spell_school_id
                         }]);
                 return db.collection('rosters').updateOne(
@@ -416,7 +419,10 @@ router.post('/roster/:id/spell/:spell_school_id/:spell_id',
             .mergeMapTo(db$.mergeMap(db => db.collection('rosters').findOne({_id})))
             .subscribe(
                 roster => res.json({roster}),
-                error => {console.log(error); res.json({error: error.message ? error.message : error})}
+                error => {
+                    console.log(error);
+                    res.json({error: error.message ? error.message : error})
+                }
             );
 
     }

@@ -34,7 +34,7 @@ const printer = new PdfPrinter(fonts);
 
 const buildHeader = (roster, event) => [
     {
-        image:     'file://../public/images/frostgrave-banner.png',
+        image:      path.resolve(__dirname, '..', 'public', 'images', 'frostgrave-banner.png'),
         width:     300,
         alignment: 'center'
     },
@@ -121,7 +121,6 @@ const filePathFromRelativeUrl = url => {
     const file_parts = ('..' + (url.replace(/^\/upload/, "/uploads"))).split('/');
     const file_path = path.resolve(__dirname, ...file_parts);
     const existsSync = fs.existsSync(file_path);
-    console.log(url, file_path, existsSync);
 
     return existsSync ? file_path : undefined;
 };
@@ -129,12 +128,11 @@ const filePathFromRelativeUrl = url => {
 const buildMiniature = (name, label, stat_block, modifiers, image_path, notes, items, small = false) => {
     const picture = {
         text:  ' ',
-        width: small ? 45 : 100,
-        stack: (image_path ? [{image: image_path, width: small ? 45 : 100,}] : []).concat({text: ' ', style: 'x_small'})
+        width: small ? 42 : 100,
+        stack: (image_path ? [{image: image_path, width: small ? 42 : 100,}] : []).concat({text: ' ', style: 'x_small'})
     };
     const itemTexts = items.map(({name}) => name);
-    console.log(itemTexts);
-    const itemsSection = small ? [itemTexts.join(', ')] : itemTexts;
+    const itemsSection = small ? [{text: itemTexts.join(', '), style: 'x_small'}] : itemTexts.map(text => ({text, style: 'small'}));
 
     const mainSection = {
         style: small ? 'small' : 'default',
@@ -196,30 +194,33 @@ const buildSoldier = (soldier, miniatures, picture_on_left = true) => {
 };
 
 const buildSpells = function (roster, spell_schools) {
+	if(roster.spells.length === 0) return '';
     const rowCount = Math.ceil(roster.spells.length / 5);
     const columnCount = Math.ceil(roster.spells.length / rowCount);
 
-    console.log(roster.spells.length, rowCount, columnCount);
-
     const spellBlocks = roster.spells.map(({spell_id, spell_school_id}) => {
             const spell_school = spell_schools.filter(_ => _._id.equals(spell_school_id))[0];
+            const wizard_spell_school = spell_schools.filter(_ => _._id.equals(roster.wizard.spell_school_id))[0];
             const spell = spell_school.spells[spell_id];
 
             const modifier = spell_school_id == roster.wizard.spell_school_id ? 0
-                : ((roster.wizard.allied_schools || []).includes(spell_school_id) ? 2
-                : (roster.wizard.opposed_school != spell_school_id ? 4
+                : ((wizard_spell_school.allied_schools || []).includes(spell_school_id) ? 2
+                : (wizard_spell_school.opposed_school != spell_school_id ? 4
                 : 6));
+				
+				console.log(spell.name, spell_school_id, wizard_spell_school.spell_school_id, wizard_spell_school.allied_schools , wizard_spell_school.opposed_school, modifier)
 
             return {
                 name:        spell.name,
                 school:      spell_school.name,
                 type:        Array.isArray(spell.types) ? spell.types.join(' OR ') : spell.types,
-                description: spell.description,
+                description: spell.description.replace(/[\r\n]+/g, ' '),
                 cost:        parseInt(spell.base_cost) + modifier,
                 modifier:    modifier,
             }
         })
-        .sort((a, b) => b.cost - a.cost || b.modifier - a.modifier || a.name.localeCompare(b.name))
+		// Cost ASC, then modifier ASC, then name alphanumerically
+        .sort((a, b) => a.cost - b.cost || a.modifier - b.modifier || a.name.localeCompare(b.name))
         .map(({name, school, type, description, cost}) => [
             {
                 columns: [
@@ -295,7 +296,7 @@ router.get('/roster/:id',
                 ([roster, event, spell_schools, miniatures]) => {
                     res.setHeader("Content-Type", "application/pdfDownload");
                     res.setHeader("Content-Disposition", "attachment; filename=\"" + roster.name + ".pdf\"");
-                    const isSmallList = !roster.apprentice && roster.soldiers.length < 5 && roster.spells.length < 6;
+                    const isSmallList = !roster.apprentice && roster.soldiers.length < 6 && roster.spells.length < 6;
 
                     const dd = {
                         pageSize: 'A4',
@@ -326,21 +327,21 @@ router.get('/roster/:id',
                             },
                             spell_school:      {
                                 alignment: 'center',
-                                fontSize:  10,
+                                fontSize:  12,
                                 font:      'IMFellEnglish'
                             },
                             spell_name:        {
                                 alignment: 'center',
-                                fontSize:  14,
+                                fontSize:  16,
                                 font:      'IMFellEnglish'
                             },
                             spell_type:        {
                                 alignment: 'center',
-                                fontSize:  9,
+                                fontSize:  10,
                             },
                             spell_description: {
                                 alignment: 'center',
-                                fontSize:  7,
+                                fontSize:  8,
                             },
                         },
                         content:      [
@@ -364,8 +365,7 @@ router.get('/roster/:id',
                                 columnGap: 20,
                                 pageBreak: isSmallList ? undefined : 'after'
                             },
-                            {text: 'Spells', style: 'header', alignment: 'center'},
-                            ' ',
+                            ...[isSmallList ? [''] : [{text: 'Spells', style:'header', alignment: 'center'}, ' ']],
                             buildSpells(roster, spell_schools)
                         ]
                     };

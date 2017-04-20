@@ -16,7 +16,7 @@ export const actions = {
     ROSTER_UPDATED: 'ROSTER_UPDATED',
 
     REMOVE_ROSTER:  'REMOVE_ROSTER',
-    ROSTER_DELETED: 'ROSTER_REMOVED',
+    ROSTER_REMOVED: 'ROSTER_REMOVED',
 
     ADD_ITEM:    'ADD_ITEM',
     REMOVE_ITEM: 'REMOVE_ITEM',
@@ -92,13 +92,11 @@ export const rosterUpdated = (error, roster) => ({
 });
 
 export const removeRoster = (roster_id) => ({
-    type: actions.UPDATE_ROSTER,
-          roster_id,
-          key,
-          value
+    type: actions.REMOVE_ROSTER,
+          roster_id
 });
 export const rosterRemoved = (error, roster_id) => ({
-    type: actions.ROSTER_UPDATED,
+    type: actions.ROSTER_REMOVED,
           error,
           roster_id
 });

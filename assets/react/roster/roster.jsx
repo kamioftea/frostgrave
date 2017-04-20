@@ -53,7 +53,7 @@ const ItemRow = ({item: {name, cost}, onRemove}) => (
             {cost ? cost + 'gp' : null}
         </div>
         <div className="small-2 columns text-right align-middle">
-            {cost ? (
+            {cost || cost === 0 ? (
             <a href="#"
                className="button small alert hollow"
                onClick={preventDefault(() => onRemove())}>
@@ -402,6 +402,16 @@ export const Roster =
                                 <i className="fa fa-file-pdf-o" />
                                 {' '}
                                 Download PDF
+                            </a>
+                        </p>
+                        <p>
+                            <a href={'#'}
+                               className="button alert expanded hollow"
+                               onClick={preventDefault(() => confirm('Delete Roster?') ? removeRoster(current_roster_id) : false)}
+                            >
+                                <i className="fa fa-trash-o" />
+                                {' '}
+                                Delete
                             </a>
                         </p>
                     </div>
