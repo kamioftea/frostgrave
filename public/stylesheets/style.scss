@@ -4,7 +4,7 @@
 $fa-font-path: "//netdna.bootstrapcdn.com/font-awesome/4.6.3/fonts";
 @import "font-awesome";
 
-@include foundation-everything(true);
+@include foundation-everything();
 
 body, html {
   min-height: 100%;

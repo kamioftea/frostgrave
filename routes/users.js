@@ -4,7 +4,7 @@ const {db$} = require('../db-conn.js');
 const bcrypt = require('bcryptjs');
 const Rx = require('rxjs');
 
-require('../rxUtil/mergeMapPersist.js')(Rx.Observable);
+const mergeMapPersist = ('../rxUtil/mergeMapPersist');
 
 module.exports = (passport) => {
     router.get('/access-key/:access_key',
@@ -61,7 +61,7 @@ module.exports = (passport) => {
             );
 
             valid$
-                .mergeMapPersist(_ => Rx.Observable.bindNodeCallback(bcrypt.hash)(password, 14))
+                .mergeMapPersist(_ => Rx.bindNodeCallback(bcrypt.hash)(password, 14))
                 .mergeMap(([db, user, hash]) => db.collection('users').updateOne(
                     {_id: user._id},
                         {
@@ -101,7 +101,7 @@ module.exports = (passport) => {
 
             db$.mergeMapPersist(db => db.collection('users').findOne({email}))
                 .validate(([, user]) => !user, "An account with that email already exists" )
-                .mergeMapPersist(_ => Rx.Observable.bindNodeCallback(bcrypt.hash)(password, 14))
+                .mergeMapPersist(_ => Rx.bindNodeCallback(bcrypt.hash)(password, 14))
                 .mergeMap(([db,,hash]) => db.collection('users').insertOne({
                     name,
                     email,

@@ -5,8 +5,8 @@ const Rx = require('rxjs');
 const {ObjectId} = require('mongodb');
 const {authenticated} = require('../authenticateRequest');
 
-require('../rxUtil/validate')(Rx.Observable);
-require('../rxUtil/mergeMapPersist')(Rx.Observable);
+const validate = require('../rxUtil/validate');
+const mergeMapPersist = ('../rxUtil/mergeMapPersist');
 
 router.use(authenticated(null, true));
 

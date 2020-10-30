@@ -5,8 +5,8 @@ const {ObjectId} = require('mongodb');
 const Rx = require('rxjs');
 const {writeMessage} = require('../../flashMessage');
 
-require('../../rxUtil/validate')(Rx.Observable);
-require('../../rxUtil/mergeMapPersist')(Rx.Observable);
+const validate = require('../../rxUtil/validate');
+const mergeMapPersist = ('../../rxUtil/mergeMapPersist');
 
 router.get('/', (req, res) => {
     db$

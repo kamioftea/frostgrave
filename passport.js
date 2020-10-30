@@ -1,9 +1,11 @@
-const Rx = require('rxjs');
+const {bindNodeCallback, of} = require('rxjs');
 const {Strategy: LocalStrategy} = require('passport-local');
 const {db$} = require('./db-conn.js');
-const {ObjectID}  = require('mongodb');
+const {map, mergeMap} = require('rxjs/operators')
+const {ObjectID} = require('mongodb');
 const bcrypt = require('bcryptjs');
-const bcryptCompare = Rx.Observable.bindNodeCallback(bcrypt.compare);
+
+const bcryptCompare = bindNodeCallback(bcrypt.compare);
 
 const passport = require('passport');
 
@@ -19,11 +21,15 @@ passport.use(new LocalStrategy(
         passwordField: 'password'
     },
     (username, password, cb) => {
-        db$.mergeMap(db => db.collection('users').findOne({email: username}))
-            .mergeMap(
+        db$.pipe(
+            mergeMap(db => db.collection('users').findOne({email: username})),
+            mergeMap(
                 user =>
-                    (user ? bcryptCompare(password, user.password) : Rx.Observable.of(false))
-                        .map(result => result ? user : false)
+                    (user ? bcryptCompare(password, user.password) : of(false)).pipe(
+                        map(result => result ? user : false)
+                        )
+
+            )
             )
             .subscribe(
                 user => cb(null, user),
@@ -44,8 +50,9 @@ passport.serializeUser((user, cb) => {
 });
 
 passport.deserializeUser(
-    (id, cb) => db$
-        .mergeMap(db => db.collection('users').findOne({_id: ObjectID(id)}))
+    (id, cb) => db$.pipe(
+        mergeMap(db => db.collection('users').findOne({_id: ObjectID(id)}))
+        )
         .subscribe(
             user => cb(null, Object.assign({}, user, {password: !!user.password})),
             err => cb(err)
