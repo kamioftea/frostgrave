@@ -2,6 +2,8 @@ const prompt = require('prompt');
 const Rx = require('rxjs');
 const bcrypt = require('bcryptjs');
 
+const {bindNodeCallback} = require('rxjs');
+
 require('../rxUtil/mergeMapPersist.js')(Rx.Observable);
 require('../rxUtil/validate.js')(Rx.Observable);
 
