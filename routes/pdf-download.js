@@ -9,7 +9,7 @@ const Rx = require('rxjs');
 const {objectEntries} = require("../iterators");
 const PdfPrinter = require('pdfmake/src/printer');
 
-require('../rxUtil/validate')(Rx.Observable);
+const validate = require('../rxUtil/validate');
 
 const fonts = {
     Roboto:        {

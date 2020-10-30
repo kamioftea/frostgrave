@@ -2,19 +2,19 @@ const express = require('express');
 const router = express.Router();
 const {db$} = require('../../db-conn.js');
 const {ObjectId} = require('mongodb');
-const Rx = require('rxjs');
-const randomBytes = Rx.Observable.bindNodeCallback(require('crypto').randomBytes);
+const {bindNodeCallback, from} = require('rxjs');
+const randomBytes = bindNodeCallback(require('crypto').randomBytes);
 const {writeMessage} = require('../../flashMessage');
 
-require('../../rxUtil/validate')(Rx.Observable);
-require('../../rxUtil/mergeMapPersist')(Rx.Observable);
+const validate = require('../../rxUtil/validate');
+const mergeMapPersist = ('../../rxUtil/mergeMapPersist');
 
 router.get('/', (req, res) => {
     const addUserActions = user => {
         const roleActions = ['Admin', 'Registered'].map(role => {
                 const url = [req.baseUrl, 'toggle-role', user._id, role].join('/');
 
-                if(user._id.equals(req.user._id) && role == 'Admin')
+                if(user._id.equals(req.user._id) && role === 'Admin')
                 {
                     return null;
                 }
@@ -38,10 +38,13 @@ router.get('/', (req, res) => {
 
     db$
         .mergeMap(
-            db => db.collection('users')
+            db => from(
+                db.collection('users')
                 .find()
                 .sort({name: 1})
-                .toArray())
+                .toArray()
+            )
+        )
         .subscribe(
             users => res.render('admin/users', {layout: 'admin/layout', title: 'Users - Admin - Frostgrave Roster Management', users: users.map(addUserActions)}),
             err => {

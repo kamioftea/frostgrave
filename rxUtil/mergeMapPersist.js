@@ -1,11 +1,5 @@
-module.exports = (obs) => obs.prototype.mergeMapPersist = function (mapper, ...args) {
-    var source = this;
-    return source.mergeMap(
-        (rawData, ...args) =>
-            obs
-                .from(mapper(rawData || null, ...args))
-                .map(result => [...(Array.isArray(rawData) ? rawData : [rawData]), result])
-        ,
-        ...args
-    );
-};
+const {mergeMap, map} = require('rxjs/operators');
+
+const mergeMapPersist = fn => mergeMap(arr => fn(arr).pipe(map(result => [...(Array.isArray(arr) ? arr : [arr]), result])));
+
+module.exports = {mergeMapPersist}

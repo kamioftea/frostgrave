@@ -1,10 +1,16 @@
 const { MongoClient }  = require('mongodb');
 const Rx = require('rxjs');
+const {tap} = require('rxjs/operators');
 
 const db$ = new Rx.AsyncSubject();
+let cachedClient = null;
 
 MongoClient
-    .connect('mongodb://localhost:27017/frostgrave')
+    .connect('mongodb://localhost:27017')
+    .then(client => {
+        cachedClient = client;
+        return client.db('frostgrave')
+    })
     .then(
         db => { db$.next(db); db$.complete() },
         err => { db$.error(err); db$.complete() }
@@ -14,7 +20,7 @@ MongoClient
 module.exports = {
     db$,
     closeDb() {
-        db$.forEach(db => db.close());
+        cachedClient ? cachedClient.close() : null;
         db$.complete();
     }
 };

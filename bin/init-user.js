@@ -1,11 +1,10 @@
+const {mergeMapPersist} = require('../rxUtil/mergeMapPersist.js');
+const {validate} = require('../rxUtil/validate.js');
+
 const prompt = require('prompt');
-const Rx = require('rxjs');
+const {partition, bindNodeCallback, merge, from} = require('rxjs');
+const {withLatestFrom, mergeMap, map, first} = require('rxjs/operators');
 const bcrypt = require('bcryptjs');
-
-const {bindNodeCallback} = require('rxjs');
-
-require('../rxUtil/mergeMapPersist.js')(Rx.Observable);
-require('../rxUtil/validate.js')(Rx.Observable);
 
 const {db$, closeDb} = require('../db-conn.js');
 
@@ -47,16 +46,21 @@ prompt.start();
 //
 // Get two properties from the user: email, password
 //
-const promptGet = Rx.Observable.bindNodeCallback(prompt.get);
-const bcryptHash = Rx.Observable.bindNodeCallback(bcrypt.hash);
+const promptGet = bindNodeCallback(prompt.get);
+const bcryptHash = bindNodeCallback(bcrypt.hash);
 
-const [withUser, noUser] = promptGet(promptSchema)
-    .validate(({password, password_check}) => password === password_check, "Passwords must match")
-    .withLatestFrom(db$)
-    .mergeMapPersist(([{email}, db]) => db.collection('users').findOne({email: email}))
-    .partition(([,,user]) => user !== null);
+const [withUser, noUser] =
+    partition(
+        promptGet(promptSchema)
+            .pipe(
+                validate(({password, password_check}) => password === password_check, "Passwords must match"),
+                withLatestFrom(db$),
+                mergeMapPersist(([{email}, db]) => from(db.collection('users').findOne({email: email})))
+            ),
+        ([, , user]) => user !== null
+    );
 
-replaceExistingSchema = {
+const replaceExistingSchema = {
     properties: {
         update: {
             description: 'Existing User Found, Update?',
@@ -67,46 +71,51 @@ replaceExistingSchema = {
     }
 };
 
-Rx.Observable
-    .merge(
-        withUser
-            .mergeMapPersist((_) => promptGet(replaceExistingSchema))
-            .validate(([,,,{update}]) => update, "Operation cancelled")
-            .mergeMapPersist(([{password}]) => bcryptHash(password, 14))
-            .mergeMap(([{name, email, roles}, db, user, ,hash]) =>
-                db.collection('users').updateOne(
-                    {_id: user._id},
-                    {
-                        $set: {
-                            name,
-                            email,
-                            password: hash,
-                            roles
-                        },
-                        $unset: {
-                            access_key: 1
-                        }
+merge(
+    withUser.pipe(
+        mergeMapPersist((_) => promptGet(replaceExistingSchema)),
+        validate(([, , , {update}]) => update, "Operation cancelled"),
+        mergeMapPersist(([{password}]) => bcryptHash(password, 14)),
+        mergeMap(([{name, email, roles}, db, user, , hash]) =>
+            db.collection('users').updateOne(
+                {_id: user._id},
+                {
+                    $set:   {
+                        name,
+                        email,
+                        password: hash,
+                        roles
+                    },
+                    $unset: {
+                        access_key: 1
                     }
-                )
-            ),
-        noUser
-            .mergeMapPersist(([{password}]) => bcryptHash(password, 14))
-            .mergeMap(([{name, email, roles}, db, ,hash]) =>
-                db.collection('users').insertOne({
-                    name,
-                    email,
-                    password: hash,
-                    roles
-                })
+                }
             )
+        )
+    ),
+    noUser.pipe(
+        mergeMapPersist(([{password}]) => bcryptHash(password, 14)),
+        mergeMap(([{name, email, roles}, db, , hash]) =>
+            db.collection('users').insertOne({
+                name,
+                email,
+                password: hash,
+                roles
+            })
+        )
     )
-    .map(res => res.result)
-    .first()
+).pipe(
+    map(res => res.result),
+    first(),
+    )
     .subscribe(
-        result => console.log('Success', result),
+        result => {
+            console.log('Success', result);
+            closeDb()
+        },
         err => {
             console.error('Error:', err);
+            closeDb()
             process.exit()
         },
-        closeDb
     );
