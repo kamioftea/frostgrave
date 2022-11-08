@@ -32,7 +32,7 @@
     "gulp-rename": "^1.2.2",
     "gulp-sourcemaps": "^1.6.0",
     "gulp-uglify": "^2.0.0",
-    "hbs": "^4.1.1",
+    "hbs": "^4.2.0",
     "isomorphic-fetch": "^3.0.0",
     "js-md5": "^0.4.1",
     "merge-stream": "^1.0.0",
