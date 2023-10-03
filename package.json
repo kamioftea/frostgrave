@@ -17,7 +17,7 @@
     "bcryptjs": "^2.3.0",
     "body-parser": "^1.20.1",
     "cookie-parser": "~1.4.3",
-    "debug": "^4.3.0",
+    "debug": "^4.3.1",
     "del": "^2.2.2",
     "es6-promise": "^3.3.1",
     "express": "^4.17.3",
